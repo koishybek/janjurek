@@ -1,0 +1,182 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Cinematic near-black + warm gold — JANJUREK redesign */
+    --background: 0 0% 4%;
+    --foreground: 40 18% 96%;
+    --card: 0 0% 7%;
+    --card-foreground: 40 18% 96%;
+    --popover: 0 0% 6%;
+    --popover-foreground: 40 18% 96%;
+    --primary: 36 54% 72%;
+    --primary-foreground: 0 0% 6%;
+    --secondary: 0 0% 11%;
+    --secondary-foreground: 0 0% 92%;
+    --muted: 0 0% 14%;
+    --muted-foreground: 40 7% 62%;
+    --accent: 36 54% 72%;
+    --accent-foreground: 0 0% 6%;
+    --destructive: 0 70% 45%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 16%;
+    --input: 0 0% 18%;
+    --ring: 36 54% 72%;
+    --chart-1: 36 70% 70%;
+    --chart-2: 210 70% 50%;
+    --chart-3: 150 60% 45%;
+    --chart-4: 270 65% 60%;
+    --chart-5: 330 75% 60%;
+    --radius: 0.5rem;
+    /* Brand tokens */
+    --gold: 36 54% 72%;
+    --panel: 240 4% 3%;
+  }
+
+  .light {
+    --background: 240 22% 98%;
+    --foreground: 240 10% 12%;
+    --card: 0 0% 100%;
+    --card-foreground: 240 12% 12%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 12% 12%;
+    --primary: 29 70% 46%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 29 35% 92%;
+    --secondary-foreground: 240 12% 12%;
+    --muted: 240 14% 92%;
+    --muted-foreground: 240 10% 32%;
+    --accent: 29 70% 46%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 70% 45%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 240 16% 88%;
+    --input: 240 16% 88%;
+    --ring: 29 70% 46%;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+}
+
+@layer utilities {
+  /* B&W cinematic photo treatment */
+  .photo-bw {
+    filter: grayscale(1) contrast(1.08) brightness(0.84);
+  }
+}
+
+@layer components {
+  .lantern-node {
+    position: absolute;
+    bottom: 1.5rem;
+    left: 1.5rem;
+    width: 72px;
+    height: 72px;
+    border-radius: 9999px;
+    background: radial-gradient(circle at 30% 30%, rgba(255, 236, 201, 0.95), rgba(255, 179, 107, 0.55) 55%, rgba(255, 179, 107, 0));
+    box-shadow: 0 0 24px rgba(255, 212, 160, 0.4), 0 0 8px rgba(255, 198, 139, 0.55);
+    transform: translate3d(0, 0, 0);
+    transition:
+      transform 2s cubic-bezier(0.32, 0.72, 0, 1),
+      box-shadow 1s ease,
+      opacity 0.6s ease;
+  }
+
+  .lantern-node::after {
+    content: "";
+    position: absolute;
+    bottom: -22px;
+    left: 50%;
+    width: 14px;
+    height: 28px;
+    border-radius: 9999px;
+    background: linear-gradient(180deg, rgba(255, 214, 158, 0.6), rgba(255, 214, 158, 0));
+    transform: translateX(-50%);
+    filter: blur(1px);
+  }
+
+  .lantern-node--flight {
+    transform: translate3d(var(--lantern-translate-x, 0), var(--lantern-translate-y, 0), 0);
+    box-shadow:
+      0 0 42px rgba(255, 212, 160, 0.75),
+      0 0 18px rgba(255, 179, 107, 0.65);
+  }
+
+  .lantern-node--arrived {
+    opacity: 0;
+  }
+
+  .lantern-star {
+    position: absolute;
+    top: 18%;
+    right: 22%;
+    width: 32px;
+    height: 32px;
+    border-radius: 9999px;
+    background: radial-gradient(circle, rgba(255, 245, 222, 0.95) 0%, rgba(255, 245, 222, 0) 70%);
+    box-shadow: 0 0 20px rgba(255, 245, 222, 0.45);
+    transition:
+      box-shadow 0.8s ease,
+      transform 0.8s ease;
+  }
+
+  .lantern-star::after,
+  .lantern-star::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: inherit;
+  }
+
+  .lantern-star--glow {
+    animation: starPulse 1.2s ease-out 1 forwards;
+    box-shadow:
+      0 0 30px rgba(255, 245, 222, 0.65),
+      0 0 60px rgba(255, 210, 160, 0.45),
+      0 0 90px rgba(255, 171, 94, 0.35);
+  }
+
+  .lantern-spark {
+    position: absolute;
+    border-radius: 9999px;
+    background: radial-gradient(circle, rgba(255, 243, 214, 0.8) 0%, rgba(255, 243, 214, 0) 75%);
+    opacity: 0.35;
+    animation: sparkPulse 6s ease-in-out infinite;
+  }
+}
+
+@keyframes starPulse {
+  0% {
+    transform: scale(1);
+    opacity: 0.75;
+  }
+  50% {
+    transform: scale(1.35);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1.1);
+    opacity: 0.9;
+  }
+}
+
+@keyframes sparkPulse {
+  0%,
+  100% {
+    opacity: 0.25;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.85;
+    transform: scale(1.5);
+  }
+}
