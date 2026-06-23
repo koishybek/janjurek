@@ -1,9 +1,9 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { PhotoGallery } from "@/components/photo-gallery";
 import type { Person } from "@data/people";
 import { ExternalLink, FileText, Film, ImageIcon } from "lucide-react";
 
@@ -62,23 +62,7 @@ export function MediaTabs({ media }: MediaTabsProps) {
             </CardContent>
           </Card>
         ) : (
-          <div className="grid gap-4 sm:grid-cols-2">
-            {media.photos.map((photo) => (
-              <Card key={photo.src} className="overflow-hidden rounded-xl border-white/10 bg-white/[0.02] shadow-none transition-colors hover:border-white/20">
-                <div className="relative h-56 w-full overflow-hidden">
-                  <Image
-                    src={photo.src}
-                    alt={photo.alt}
-                    fill
-                    sizes="(min-width: 768px) 50vw, 100vw"
-                    className="object-cover grayscale transition duration-700 hover:grayscale-0"
-                    priority={false}
-                  />
-                </div>
-                <CardContent className="p-4 text-sm text-muted-foreground">{photo.alt}</CardContent>
-              </Card>
-            ))}
-          </div>
+          <PhotoGallery photos={media.photos.map((p) => ({ src: p.src, alt: p.alt }))} />
         )}
       </TabsContent>
       <TabsContent value="documents" className="mt-6 space-y-3 focus-visible:outline-none focus-visible:ring-2">

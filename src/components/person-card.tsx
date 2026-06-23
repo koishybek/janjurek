@@ -16,16 +16,16 @@ export function PersonCard({ person }: PersonCardProps) {
 
   return (
     <Card className="rounded-xl border-white/10 bg-white/[0.02] shadow-none transition-colors hover:border-white/20">
-      <CardHeader className="flex flex-row items-start gap-6">
-        <Avatar className="h-24 w-24 border border-gold/30 grayscale">
+      <CardHeader className="flex flex-col gap-6 p-8 sm:flex-row sm:items-start">
+        <Avatar className="h-28 w-28 shrink-0 border border-gold/30 grayscale">
           {avatarSrc ? <AvatarImage src={avatarSrc} alt={`Портрет: ${fullName || person.lastName}`} /> : null}
-          <AvatarFallback className="bg-white/[0.04] text-lg font-semibold text-gold">{initials || "?"}</AvatarFallback>
+          <AvatarFallback className="bg-white/[0.04] text-2xl font-semibold text-gold">{initials || "?"}</AvatarFallback>
         </Avatar>
-        <div className="space-y-2">
-          <CardTitle className="font-serif text-3xl text-foreground">
+        <div className="space-y-3">
+          <CardTitle className="font-serif text-3xl leading-tight text-foreground sm:text-4xl">
             {[person.lastName, fullName].filter(Boolean).join(" ")}
           </CardTitle>
-          <CardDescription className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+          <CardDescription className="flex flex-wrap items-center gap-x-5 gap-y-2 text-base text-muted-foreground">
             <span className="inline-flex items-center gap-2">
               <Calendar className="h-4 w-4 text-gold/80" aria-hidden />
               {person.years ?? "Годы неизвестны"}
@@ -44,11 +44,11 @@ export function PersonCard({ person }: PersonCardProps) {
             ) : null}
           </CardDescription>
       {person.extraInfo ? (
-        <p className="max-w-2xl text-sm leading-6 text-muted-foreground">{person.extraInfo}</p>
+        <p className="max-w-2xl text-[15px] leading-8 text-muted-foreground sm:text-base">{person.extraInfo}</p>
       ) : null}
     </div>
   </CardHeader>
-  <CardContent className="flex flex-wrap gap-3 text-sm text-muted-foreground">
+  <CardContent className="flex flex-wrap gap-3 px-8 pb-8 text-sm text-muted-foreground">
     {person.zhuz ? <BadgeLine label="Жуз" value={person.zhuz} /> : null}
     {person.rod ? <BadgeLine label="Род" value={person.rod} /> : null}
     {person.plemya ? <BadgeLine label="Племя" value={person.plemya} /> : null}

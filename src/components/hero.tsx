@@ -1,34 +1,46 @@
 "use client";
 
+import { useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { motion } from "motion/react";
-import { Instagram, Search } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { motion, useMotionValue, useSpring, useTransform } from "motion/react";
+import { ArrowRight, Search, ChevronDown } from "lucide-react";
+import { Starfield } from "@/components/starfield";
 import { useSearchDialog } from "@/components/search-dialog-context";
 
-const navLinks = [
-  { href: "#about", label: "О нас" },
-  { href: "#guide", label: "Инструкция" },
-  { href: "#contacts", label: "Контакты" },
-];
-
 const EASE: [number, number, number, number] = [0.16, 1, 0.3, 1];
-
-function WhatsAppIcon({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden className={className}>
-      <path d="M.057 24l1.687-6.163a11.867 11.867 0 01-1.587-5.946C.16 5.335 5.495 0 12.05 0a11.82 11.82 0 018.413 3.488 11.82 11.82 0 013.48 8.414c-.003 6.557-5.338 11.892-11.893 11.892a11.9 11.9 0 01-5.688-1.448L.057 24zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884a9.82 9.82 0 001.51 5.26l-.999 3.648 3.477-.815zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.521.149-.174.198-.298.298-.497.099-.198.05-.372-.025-.521-.074-.149-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413z" />
-    </svg>
-  );
-}
 
 export function Hero() {
   const { openDialog } = useSearchDialog();
 
+  // Beam follows the cursor horizontally with a gentle spring.
+  const rawBeam = useMotionValue(0);
+  const beam = useSpring(rawBeam, { stiffness: 35, damping: 16, mass: 0.7 });
+  const beamX = useTransform(beam, (v) => `${v}px`);
+  const beamRot = useTransform(beam, (v) => `${v * 0.03}deg`);
+
+  useEffect(() => {
+    const media = window.matchMedia("(prefers-reduced-motion: reduce)");
+    if (media.matches) return;
+    let frame = 0;
+    const onMove = (e: MouseEvent) => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        // map cursor across the viewport to a limited horizontal travel
+        const offset = (e.clientX / window.innerWidth - 0.5) * 220;
+        rawBeam.set(offset);
+      });
+    };
+    window.addEventListener("mousemove", onMove, { passive: true });
+    return () => {
+      cancelAnimationFrame(frame);
+      window.removeEventListener("mousemove", onMove);
+    };
+  }, [rawBeam]);
+
   return (
-    <section className="relative h-dvh min-h-[640px] w-full overflow-hidden bg-[hsl(var(--panel))] text-white">
-      {/* ── Background photograph ── */}
+    <section className="relative h-dvh min-h-[640px] w-full overflow-hidden bg-black text-white">
+      {/* ── Background photograph (full-bleed, seamless) ── */}
       <div className="absolute inset-0">
         <Image
           src="/images/hero/hero.jpg"
@@ -36,115 +48,107 @@ export function Hero() {
           fill
           priority
           sizes="100vw"
-          className="photo-bw object-cover object-[44%_50%]"
-        />
-        {/* top + bottom vignette for text legibility */}
-        <div
-          className="absolute inset-0 bg-gradient-to-b from-black/45 via-transparent to-black/75"
-          aria-hidden
-        />
-        {/* right-edge fade so the photo melts seamlessly into the black panel */}
-        <div
-          className="absolute inset-0 bg-gradient-to-r from-black/30 via-transparent to-black lg:via-transparent"
-          aria-hidden
+          className="object-cover object-[50%_50%]"
+          style={{ filter: "grayscale(1) contrast(1.06) brightness(0.78)" }}
         />
       </div>
 
-      {/* ── Mobile top bar (panel is desktop-only) ── */}
-      <div className="absolute inset-x-0 top-0 z-20 flex items-center justify-between px-6 py-5 lg:hidden">
-        <span className="font-serif text-xl tracking-[0.12em] text-gold">JANJUREK</span>
-        <nav className="flex items-center gap-4 text-sm text-white/70">
-          {navLinks.map((l) => (
-            <Link key={l.href} href={l.href} className="transition hover:text-gold">
-              {l.label}
-            </Link>
-          ))}
-        </nav>
-      </div>
+      {/* ── Extra parallax stars for depth ── */}
+      <Starfield className="absolute inset-0 z-[1] opacity-70" />
 
-      {/* ── Layout: photo zone (title) + black side panel ── */}
-      <div className="relative z-10 grid h-full grid-cols-1 lg:grid-cols-[1fr_clamp(300px,31%,440px)]">
-        {/* LEFT — centered wordmark above the beam */}
-        <div className="relative flex items-center justify-center px-6">
-          <motion.div
-            initial={{ opacity: 0, y: 26 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1.1, ease: EASE }}
-            className="-mt-32 text-center sm:-mt-40"
+      {/* ── Interactive light beam + source glow ── */}
+      <motion.div className="hero-beam z-[2]" style={{ "--beam-x": beamX, "--beam-rot": beamRot } as never} />
+      <motion.div className="hero-beam-source z-[2]" style={{ "--beam-x": beamX } as never} />
+
+      {/* ── Cinematic vignettes for legibility ── */}
+      <div className="absolute inset-0 z-[3] bg-gradient-to-b from-black/55 via-transparent to-black/85" aria-hidden />
+      <div className="absolute inset-0 z-[3] bg-[radial-gradient(120%_90%_at_50%_30%,transparent_40%,rgba(0,0,0,0.6)_100%)]" aria-hidden />
+
+      {/* ── Centered content ── */}
+      <div className="relative z-10 flex h-full flex-col items-center justify-center px-6 text-center">
+        <motion.p
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1, delay: 0.25, ease: EASE }}
+          className="font-sans text-[11px] font-light uppercase tracking-[0.42em] text-white/75 sm:text-xs"
+        >
+          Мы храним воспоминания
+        </motion.p>
+
+        <motion.h1
+          initial={{ opacity: 0, y: 26 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1.1, delay: 0.1, ease: EASE }}
+          className="text-glow-gold mt-5 font-serif text-6xl font-semibold leading-[0.92] tracking-tight text-gold sm:text-7xl md:text-8xl lg:text-[8.5rem]"
+        >
+          JANJUREK
+        </motion.h1>
+
+        <motion.p
+          initial={{ opacity: 0, y: 18 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1, delay: 0.5, ease: EASE }}
+          className="mt-7 max-w-xl text-balance text-sm leading-7 text-white/70 sm:text-base"
+        >
+          Каждая история — часть нашей вечности. Сохраним память о близких
+          и передадим её будущим поколениям.
+        </motion.p>
+
+        {/* ── CTAs ── */}
+        <motion.div
+          initial={{ opacity: 0, y: 18 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1, delay: 0.65, ease: EASE }}
+          className="mt-10 flex flex-col items-center gap-3 sm:flex-row"
+        >
+          <button
+            type="button"
+            onClick={openDialog}
+            className="group inline-flex items-center justify-center gap-2 rounded-full bg-gold px-7 py-3.5 text-sm font-semibold text-black transition hover:bg-gold/90 hover:shadow-[0_0_36px_-6px_rgba(227,194,141,0.7)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2 focus-visible:ring-offset-black"
           >
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 1, delay: 0.35, ease: EASE }}
-              className="font-sans text-xs font-light tracking-[0.2em] text-white/85 sm:text-sm"
-            >
-              Мы храним воспоминания
-            </motion.p>
-            <h1 className="mt-3 font-serif text-6xl font-semibold leading-[0.92] tracking-tight text-gold drop-shadow-[0_6px_44px_rgba(227,194,141,0.28)] sm:text-7xl md:text-8xl">
-              JANJUREK
-            </h1>
-          </motion.div>
-        </div>
+            <Search className="h-4 w-4" />
+            Найти страницу памяти
+          </button>
+          <Link
+            href="/create"
+            className="group inline-flex items-center justify-center gap-2 rounded-full border border-white/25 bg-white/[0.04] px-7 py-3.5 text-sm font-medium text-white/90 backdrop-blur-sm transition hover:border-gold/70 hover:text-gold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60"
+          >
+            Создать страницу
+            <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+          </Link>
+        </motion.div>
 
-        {/* RIGHT — solid black panel */}
-        <motion.aside
+        {/* ── Inline search affordance ── */}
+        <motion.button
+          type="button"
+          onClick={openDialog}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ duration: 1, delay: 0.2, ease: EASE }}
-          className="relative z-10 hidden flex-col bg-[hsl(var(--panel))] px-10 pb-12 pt-9 lg:flex"
+          transition={{ duration: 1, delay: 0.9, ease: EASE }}
+          className="mt-8 flex items-center gap-2.5 rounded-full border border-white/10 bg-black/30 px-5 py-2.5 text-xs text-white/45 backdrop-blur-md transition hover:border-white/25 hover:text-white/70"
         >
-          <div className="text-right">
-            <span className="font-serif text-2xl tracking-[0.14em] text-gold">JANJUREK</span>
-          </div>
-
-          <nav className="mt-16 flex flex-col items-end gap-5">
-            {navLinks.map((link, i) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className={cn(
-                  "font-sans text-base transition-colors duration-200 hover:text-gold",
-                  i === 0 ? "font-semibold text-white" : "text-white/55"
-                )}
-              >
-                {link.label}
-              </Link>
-            ))}
-          </nav>
-
-          <div className="mt-8 flex justify-end gap-3">
-            <Link
-              href="https://wa.me/77000000000"
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="Написать в WhatsApp"
-              className="grid h-9 w-9 place-items-center rounded-full border border-white/15 text-white/75 transition hover:border-gold hover:text-gold"
-            >
-              <WhatsAppIcon className="h-[18px] w-[18px]" />
-            </Link>
-            <Link
-              href="https://instagram.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="Перейти в Instagram"
-              className="grid h-9 w-9 place-items-center rounded-full border border-white/15 text-white/75 transition hover:border-gold hover:text-gold"
-            >
-              <Instagram className="h-[18px] w-[18px]" />
-            </Link>
-          </div>
-        </motion.aside>
+          <Search className="h-3.5 w-3.5" />
+          <span>Поиск по имени или фамилии…</span>
+          <kbd className="ml-1 rounded border border-white/15 px-1.5 py-0.5 text-[10px] text-white/40">⌘K</kbd>
+        </motion.button>
       </div>
 
-      {/* ── Floating search pill (bottom-right, overlapping the panel edge) ── */}
-      <button
-        type="button"
-        onClick={openDialog}
-        aria-label="Открыть поиск"
-        className="group absolute bottom-6 right-6 z-30 flex items-center gap-2 rounded-md border border-white/10 bg-white/10 px-4 py-2 text-sm text-white/55 backdrop-blur-md transition hover:bg-white/15 hover:text-white/85 lg:right-8"
+      {/* ── Scroll hint ── */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 1, delay: 1.3 }}
+        className="absolute bottom-6 left-1/2 z-10 -translate-x-1/2"
       >
-        <Search className="h-3.5 w-3.5" />
-        <span>Поиск...</span>
-      </button>
+        <motion.span
+          animate={{ y: [0, 7, 0] }}
+          transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut" }}
+          className="block text-white/40"
+          aria-hidden
+        >
+          <ChevronDown className="h-5 w-5" />
+        </motion.span>
+      </motion.div>
     </section>
   );
 }

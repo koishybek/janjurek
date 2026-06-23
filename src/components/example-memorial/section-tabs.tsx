@@ -44,7 +44,7 @@ export function SectionTabs({ sections }: SectionTabsProps) {
               <TabsTrigger
                 key={section.id}
                 value={section.id}
-                className="flex-1 whitespace-nowrap rounded-full px-4 py-1.5 text-xs font-medium tracking-wide text-muted-foreground transition-colors hover:text-foreground data-[state=active]:bg-gold data-[state=active]:text-[hsl(var(--accent-foreground))] sm:flex-none sm:text-sm"
+                className="flex-1 whitespace-nowrap rounded-full px-5 py-2.5 text-sm font-medium tracking-wide text-muted-foreground transition-colors hover:text-foreground data-[state=active]:bg-gold data-[state=active]:text-[hsl(var(--accent-foreground))] sm:flex-none"
               >
                 {section.label}
               </TabsTrigger>

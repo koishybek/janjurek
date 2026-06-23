@@ -26,18 +26,18 @@ export function HeroSection({ name, years, location }: HeroSectionProps) {
       </div>
 
       <div className="relative flex min-h-[420px] flex-col justify-end gap-8 p-8 sm:p-12 md:min-h-[480px] md:flex-row md:items-end md:justify-between lg:p-16">
-        <div className="max-w-2xl space-y-4">
-          <p className="text-xs font-medium uppercase tracking-[0.32em] text-gold/80">
+        <div className="max-w-2xl space-y-5">
+          <p className="text-[13px] font-medium uppercase tracking-[0.32em] text-gold/90">
             Мемориал JANJUREK
           </p>
           <h1 className="font-serif text-4xl leading-[1.05] text-gold sm:text-5xl lg:text-6xl">
             {name}
           </h1>
-          <p className="text-base text-white/70 sm:text-lg">
+          <p className="text-lg text-white/75 sm:text-xl">
             {years}
-            {location ? <span className="text-white/40"> · {location}</span> : null}
+            {location ? <span className="text-white/45"> · {location}</span> : null}
           </p>
-          <p className="max-w-md text-sm leading-7 text-white/55">
+          <p className="max-w-lg text-base leading-8 text-white/60">
             Светлая память. Поделитесь воспоминаниями и сохраните историю для будущих поколений.
           </p>
         </div>

@@ -13,6 +13,7 @@ export const isFirebaseConfigured = firebaseConfig.apiKey !== "FIREBASE_API_KEY"
 export const firebaseCollections = {
   people: process.env.NEXT_PUBLIC_FIREBASE_PEOPLE_COLLECTION ?? "people",
   relations: process.env.NEXT_PUBLIC_FIREBASE_RELATIONS_COLLECTION ?? "relations",
+  tributes: process.env.NEXT_PUBLIC_FIREBASE_TRIBUTES_COLLECTION ?? "tributes",
 };
 
 export const mediaRootFolder = process.env.NEXT_PUBLIC_FIREBASE_MEDIA_ROOT ?? "people";

@@ -249,7 +249,7 @@ export default function AdminPage() {
   if (!authorized) {
     return (
       <main className="container flex min-h-screen items-center justify-center py-24">
-        <Card className="w-full max-w-md rounded-3xl border-border/30 bg-secondary/40">
+        <Card className="w-full max-w-md rounded-2xl border-white/10 bg-white/[0.02]">
           <CardHeader>
             <CardTitle>Вход в админ-панель</CardTitle>
             <CardDescription>Введите код, чтобы продолжить. Доступ открыт только доверенному администратору.</CardDescription>
@@ -265,8 +265,9 @@ export default function AdminPage() {
                   onChange={(event) => setCodeInput(event.target.value)}
                 />
               </label>
-              <Button type="submit" className="w-full rounded-2xl bg-accent text-accent-foreground">
+              <Button type="submit" className="w-full rounded-full bg-gold text-black hover:bg-gold/90">
                 Войти
+
               </Button>
               {status ? <p className="text-sm text-red-500">{status}</p> : null}
             </form>
@@ -280,7 +281,7 @@ export default function AdminPage() {
     <div className="min-h-screen bg-background">
       <main className="container space-y-12 py-12">
         <section className="space-y-2">
-          <p className="text-sm uppercase tracking-[0.4em] text-accent/80">Администрирование</p>
+          <p className="text-sm uppercase tracking-[0.4em] text-gold/80">Администрирование</p>
           <h1 className="font-serif text-4xl text-foreground">Панель управления JANJUREK</h1>
           <p className="text-sm text-muted-foreground">
             Здесь вы можете подготовить записи людей перед выгрузкой в Firebase. Все поля соответствуют биографии Акана Нургали.
@@ -288,7 +289,7 @@ export default function AdminPage() {
         </section>
 
         <section className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
-          <Card className="rounded-3xl border-border/30 bg-secondary/40">
+          <Card className="rounded-2xl border-white/10 bg-white/[0.02]">
             <CardHeader>
               <CardTitle>Подготовка записи</CardTitle>
               <CardDescription>Заполните поля, добавьте медиа и нажмите «Сформировать черновик».</CardDescription>
@@ -401,7 +402,7 @@ export default function AdminPage() {
                       <p className="text-sm text-muted-foreground">Фотографии ещё не добавлены.</p>
                     ) : (
                       photoDrafts.map((photo) => (
-                        <div key={photo.id} className="rounded-2xl border border-border/30 p-4">
+                        <div key={photo.id} className="rounded-2xl border border-white/10 p-4">
                           <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                             <div className="flex-1 space-y-3">
                               <label className="space-y-1 text-sm font-medium text-foreground">
@@ -440,7 +441,7 @@ export default function AdminPage() {
                   </div>
                   <div className="space-y-4">
                     {videoDrafts.map((video) => (
-                      <div key={video.id} className="grid gap-3 rounded-2xl border border-border/30 p-4 md:grid-cols-[1fr_1fr_auto]">
+                      <div key={video.id} className="grid gap-3 rounded-2xl border border-white/10 p-4 md:grid-cols-[1fr_1fr_auto]">
                         <Input value={video.title} onChange={updateVideoDraft(video.id, "title")} placeholder="Название" />
                         <Input value={video.url} onChange={updateVideoDraft(video.id, "url")} placeholder="https://..." />
                         <Button type="button" variant="outline" className="rounded-2xl" onClick={() => removeVideoDraft(video.id)}>
@@ -465,7 +466,7 @@ export default function AdminPage() {
                   </div>
                   <div className="space-y-4">
                     {documentDrafts.map((doc) => (
-                      <div key={doc.id} className="space-y-3 rounded-2xl border border-border/30 p-4">
+                      <div key={doc.id} className="space-y-3 rounded-2xl border border-white/10 p-4">
                         <Input value={doc.title} onChange={updateDocumentDraft(doc.id, "title")} placeholder="Название" />
                         <Input value={doc.url} onChange={updateDocumentDraft(doc.id, "url")} placeholder="https://..." />
                         <Textarea
@@ -486,7 +487,7 @@ export default function AdminPage() {
                 </div>
 
                 <div className="flex flex-wrap gap-4">
-                  <Button type="submit" className="rounded-2xl bg-accent text-accent-foreground" disabled={saving}>
+                  <Button type="submit" className="rounded-full bg-gold text-black hover:bg-gold/90" disabled={saving}>
                     {saving ? "Сохранение..." : "Сформировать черновик"}
                   </Button>
                   <Button type="button" variant="outline" className="rounded-2xl" onClick={resetForm}>
@@ -499,7 +500,7 @@ export default function AdminPage() {
           </Card>
 
           <div className="space-y-6">
-            <Card className="rounded-3xl border-border/30 bg-secondary/30">
+            <Card className="rounded-2xl border-white/10 bg-white/[0.02]">
               <CardHeader>
                 <CardTitle>База людей</CardTitle>
                 <CardDescription>
@@ -516,7 +517,7 @@ export default function AdminPage() {
                 </p>
                 <ul className="space-y-3">
                   {existingPeople.map((person) => (
-                    <li key={person.id} className="flex items-center justify-between rounded-2xl border border-border/30 p-3">
+                    <li key={person.id} className="flex items-center justify-between rounded-2xl border border-white/10 p-3">
                       <div>
                         <p className="text-sm font-semibold text-foreground">{person.name}</p>
                         <p className="text-xs text-muted-foreground">slug: {person.slug}</p>
@@ -528,7 +529,7 @@ export default function AdminPage() {
               </CardContent>
             </Card>
 
-            <Card className="rounded-3xl border-border/30 bg-secondary/30">
+            <Card className="rounded-2xl border-white/10 bg-white/[0.02]">
               <CardHeader>
                 <CardTitle>Готовый JSON</CardTitle>
                 <CardDescription>Скопируйте и вставьте в Firebase вручную или через скрипт.</CardDescription>

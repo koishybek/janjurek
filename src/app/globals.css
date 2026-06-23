@@ -71,6 +71,150 @@
   .photo-bw {
     filter: grayscale(1) contrast(1.08) brightness(0.84);
   }
+
+  /* Warm gold text glow for hero wordmark / accents */
+  .text-glow-gold {
+    text-shadow: 0 4px 44px rgba(227, 194, 141, 0.28);
+  }
+
+  /* Reusable warm-glow hover for cards & media.
+     Applies a soft gold inner halo + lift + border warming on hover. */
+  .glow-card {
+    transition:
+      transform 0.5s cubic-bezier(0.16, 1, 0.3, 1),
+      border-color 0.4s ease,
+      box-shadow 0.5s ease;
+  }
+  .glow-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(227, 194, 141, 0.45);
+    box-shadow:
+      0 18px 50px -20px rgba(0, 0, 0, 0.8),
+      0 0 0 1px rgba(227, 194, 141, 0.12),
+      inset 0 0 40px -22px rgba(227, 194, 141, 0.55);
+  }
+
+  /* Thin gold hairline used for chains / dividers */
+  .hairline-gold {
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(227, 194, 141, 0.55) 18%,
+      rgba(227, 194, 141, 0.55) 82%,
+      transparent
+    );
+  }
+}
+
+@layer components {
+  /* ── Hero: interactive light beam ──
+     A vertical cone of warm light anchored at the lantern. Its horizontal
+     position is driven by --beam-x (set from JS, eased via a spring). */
+  .hero-beam {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    width: 46vw;
+    max-width: 760px;
+    height: 92%;
+    transform: translateX(calc(-50% + var(--beam-x, 0px))) rotate(var(--beam-rot, 0deg));
+    transform-origin: bottom center;
+    background: conic-gradient(
+      from 180deg at 50% 100%,
+      transparent 0deg,
+      rgba(255, 226, 178, 0.16) 6deg,
+      rgba(255, 213, 150, 0.28) 11deg,
+      rgba(255, 226, 178, 0.16) 16deg,
+      transparent 22deg
+    );
+    filter: blur(14px);
+    opacity: 0.85;
+    mix-blend-mode: screen;
+    pointer-events: none;
+    will-change: transform;
+    animation: beamBreathe 7s ease-in-out infinite;
+  }
+
+  /* Soft round source glow sitting on the lantern */
+  .hero-beam-source {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    height: 240px;
+    width: 240px;
+    transform: translate(calc(-50% + var(--beam-x, 0px)), 38%);
+    background: radial-gradient(
+      circle,
+      rgba(255, 236, 201, 0.55) 0%,
+      rgba(255, 196, 130, 0.32) 30%,
+      rgba(255, 196, 130, 0) 70%
+    );
+    filter: blur(6px);
+    mix-blend-mode: screen;
+    pointer-events: none;
+    will-change: transform;
+    animation: beamBreathe 7s ease-in-out infinite;
+  }
+
+  /* ── Starfield parallax layers ── */
+  .star-layer {
+    position: absolute;
+    inset: -10%;
+    background-repeat: repeat;
+    will-change: transform;
+    pointer-events: none;
+  }
+  .star-twinkle {
+    animation: twinkle 5.5s ease-in-out infinite;
+  }
+}
+
+@keyframes beamBreathe {
+  0%,
+  100% {
+    opacity: 0.7;
+  }
+  50% {
+    opacity: 0.95;
+  }
+}
+
+@keyframes twinkle {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 0.95;
+  }
+}
+
+@keyframes risingSpark {
+  0% {
+    transform: translateY(0) scale(1);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.8;
+  }
+  100% {
+    transform: translateY(-120px) scale(0.4);
+    opacity: 0;
+  }
+}
+
+/* Respect users who prefer reduced motion: freeze ambient animation */
+@media (prefers-reduced-motion: reduce) {
+  .hero-beam,
+  .hero-beam-source,
+  .star-twinkle,
+  .lantern-spark,
+  .lantern-star--glow {
+    animation: none !important;
+  }
+  .glow-card:hover {
+    transform: none;
+  }
 }
 
 @layer components {
