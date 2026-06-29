@@ -100,17 +100,17 @@ export function MemoryWall({ slug, personName }: MemoryWallProps) {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div className="space-y-2">
           <p className="text-xs font-medium uppercase tracking-[0.28em] text-gold/80">Стена памяти</p>
-          <h2 className="font-serif text-3xl text-foreground">Воспоминания близких</h2>
-          <p className="max-w-xl text-sm text-muted-foreground">
-            Тёплые слова родных, друзей и учеников о {personName.split(" ")[0] || "герое"}. Поделитесь своим воспоминанием — после модерации оно появится здесь.
+          <h2 className="font-serif text-3xl text-foreground">Заметки и воспоминания</h2>
+          <p className="max-w-xl text-base text-muted-foreground">
+            Тёплые слова родных, друзей и учеников о {personName.split(" ")[0] || "герое"}. Оставьте свою заметку — после модерации она появится здесь.
           </p>
         </div>
         <Button
           onClick={() => setOpen((v) => !v)}
-          className="shrink-0 gap-2 rounded-full bg-gold text-black hover:bg-gold/90"
+          className="shrink-0 gap-2 gold-cta rounded-full text-black"
         >
           <MessageSquarePlus className="h-4 w-4" />
-          Оставить воспоминание
+          Оставить заметку
         </Button>
       </div>
 
@@ -148,7 +148,7 @@ export function MemoryWall({ slug, personName }: MemoryWallProps) {
                 <Button type="button" variant="outline" className="rounded-full border-white/15" onClick={() => setOpen(false)}>
                   Отмена
                 </Button>
-                <Button type="submit" disabled={submitting} className="gap-2 rounded-full bg-gold text-black hover:bg-gold/90">
+                <Button type="submit" disabled={submitting} className="gap-2 gold-cta rounded-full text-black">
                   {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
                   Отправить
                 </Button>

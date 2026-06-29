@@ -11,7 +11,6 @@ import { PersonCard } from "@/components/person-card";
 import { PersonTable } from "@/components/person-table";
 import { MediaTabs } from "@/components/media-tabs";
 import { FamilyTreeLazy } from "@/components/family-tree-lazy";
-import { JetiAtaChain, defaultJetiAta, type AtaNode } from "@/components/jeti-ata";
 import { MemoryWall } from "@/components/memory-wall";
 import { ShareQR } from "@/components/share-qr";
 import { people as seedPeople, relations } from "@data/people";
@@ -76,8 +75,8 @@ export function MemoryPageClient({ initialPerson, slug }: MemoryPageClientProps)
       { id: "biography", label: "Биография" },
       person?.media ? { id: "media", label: "Медиа" } : null,
       { id: "records", label: "Архив" },
-      { id: "tree", label: "Жеті ата" },
-      { id: "tributes", label: "Воспоминания" },
+      { id: "tree", label: "Родословная" },
+      { id: "tributes", label: "Заметки" },
     ].filter((section): section is { id: string; label: string } => Boolean(section));
     return list;
   }, [person]);
@@ -104,15 +103,6 @@ export function MemoryPageClient({ initialPerson, slug }: MemoryPageClientProps)
       relations.some((edge) => edge.fromId === person.id || edge.toId === person.id) &&
       seedPeople.some((p) => p.id === person.id);
 
-    // Build the Жеті ата chain around this person: ancestors on the left, self at the end.
-    const jetiNodes: AtaNode[] = defaultJetiAta.map((node) => {
-      if (node.self) return { ...node, term: person.firstName || "Сіз", name: undefined };
-      if (node.ordinal === "1-ата" && person.fatherName) {
-        return { ...node, name: person.fatherName };
-      }
-      return node;
-    });
-
     return (
       <>
         <HeroSection name={fullName} years={person.years ?? "—"} location={person.birthPlace} />
@@ -130,7 +120,7 @@ export function MemoryPageClient({ initialPerson, slug }: MemoryPageClientProps)
           ) : null}
           <section id="records" className="scroll-mt-32 space-y-8">
             <Separator className="bg-white/10" />
-            <Card className="rounded-xl border-white/10 bg-white/[0.02] p-8">
+            <Card className="rounded-2xl surface p-8">
               <CardContent className="space-y-6 p-0">
                 <div className="space-y-2">
                   <p className="text-xs font-medium uppercase tracking-[0.28em] text-gold/80">Архив</p>
@@ -143,31 +133,24 @@ export function MemoryPageClient({ initialPerson, slug }: MemoryPageClientProps)
           <section id="tree" className="scroll-mt-32 space-y-8">
             <Separator className="bg-white/10" />
             <div className="space-y-2">
-              <p className="text-xs font-medium uppercase tracking-[0.28em] text-gold/80">Жеті ата</p>
-              <h2 className="font-serif text-3xl text-foreground">Связь поколений</h2>
-              <p className="max-w-2xl text-sm text-muted-foreground">
-                Семь колен рода — нить, что связывает {person.firstName || "героя"} с предками и потомками.
+              <p className="text-xs font-medium uppercase tracking-[0.28em] text-gold/80">Родословная</p>
+              <h2 className="font-serif text-3xl text-foreground">Родовое древо</h2>
+              <p className="max-w-2xl text-base text-muted-foreground">
+                Связь поколений семьи {person.lastName || "героя"}. Нажмите на родственников, чтобы перейти к их страницам.
               </p>
             </div>
-            <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-6 sm:p-8">
-              <JetiAtaChain nodes={jetiNodes} />
-            </div>
             {hasRelations ? (
-              <>
-                <div className="space-y-1 pt-2">
-                  <h3 className="font-serif text-2xl text-foreground">Родовое древо</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Нажмите на родственников, чтобы перейти к их страницам (когда они появятся).
-                  </p>
-                </div>
-                <FamilyTreeLazy
-                  rootId={person.id}
-                  people={seedPeople}
-                  relations={relations}
-                  variant="full"
-                />
-              </>
-            ) : null}
+              <FamilyTreeLazy
+                rootId={person.id}
+                people={seedPeople}
+                relations={relations}
+                variant="full"
+              />
+            ) : (
+              <div className="rounded-2xl border border-dashed border-white/10 bg-white/[0.02] p-10 text-center text-sm text-muted-foreground">
+                Родственные связи для этой страницы пока не добавлены.
+              </div>
+            )}
           </section>
 
           <section id="tributes" className="scroll-mt-32 space-y-8">

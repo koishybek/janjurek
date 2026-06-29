@@ -11,6 +11,21 @@ type MediaTabsProps = {
   media: NonNullable<Person["media"]>;
 };
 
+/** Extract a YouTube video id from common URL shapes (watch, youtu.be, embed, shorts). */
+function youtubeId(url: string): string | null {
+  const patterns = [
+    /[?&]v=([\w-]{11})/,
+    /youtu\.be\/([\w-]{11})/,
+    /youtube\.com\/embed\/([\w-]{11})/,
+    /youtube\.com\/shorts\/([\w-]{11})/,
+  ];
+  for (const re of patterns) {
+    const m = url.match(re);
+    if (m) return m[1];
+  }
+  return null;
+}
+
 export function MediaTabs({ media }: MediaTabsProps) {
   return (
     <Tabs defaultValue="video" className="w-full">
@@ -28,7 +43,7 @@ export function MediaTabs({ media }: MediaTabsProps) {
           <span className="ml-1.5 text-xs text-muted-foreground">{media.documents.length}</span>
         </TabsTrigger>
       </TabsList>
-      <TabsContent value="video" className="mt-6 space-y-3 focus-visible:outline-none focus-visible:ring-2">
+      <TabsContent value="video" className="mt-6 focus-visible:outline-none focus-visible:ring-2">
         {media.videos.length === 0 ? (
           <Card className="rounded-xl border-white/10 bg-white/[0.02] shadow-none">
             <CardContent className="flex items-center gap-3 p-6 text-muted-foreground">
@@ -37,20 +52,43 @@ export function MediaTabs({ media }: MediaTabsProps) {
             </CardContent>
           </Card>
         ) : (
-          media.videos.map((video) => (
-            <Card key={video.url} className="rounded-xl border-white/10 bg-white/[0.02] shadow-none transition-colors hover:border-white/20">
-              <CardHeader className="flex flex-row items-center justify-between gap-4">
-                <CardTitle className="flex items-center gap-3 text-base font-semibold text-foreground">
-                  <Film className="h-4 w-4 shrink-0 text-gold/80" aria-hidden />
-                  {video.title}
-                </CardTitle>
-                <Link href={video.url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-sm text-gold underline-offset-4 hover:underline">
-                  Смотреть
-                  <ExternalLink className="h-4 w-4" aria-hidden />
-                </Link>
-              </CardHeader>
-            </Card>
-          ))
+          <div className="grid gap-5 sm:grid-cols-2">
+            {media.videos.map((video) => {
+              const id = youtubeId(video.url);
+              return (
+                <div key={video.url} className="overflow-hidden rounded-xl border border-white/10 bg-white/[0.02]">
+                  {id ? (
+                    <div className="relative aspect-video w-full">
+                      <iframe
+                        src={`https://www.youtube-nocookie.com/embed/${id}`}
+                        title={video.title}
+                        loading="lazy"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                        className="absolute inset-0 h-full w-full"
+                      />
+                    </div>
+                  ) : (
+                    <div className="flex aspect-video items-center justify-center bg-black/40">
+                      <Link
+                        href={video.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 text-sm text-gold underline-offset-4 hover:underline"
+                      >
+                        <Film className="h-4 w-4" /> Смотреть видео
+                        <ExternalLink className="h-4 w-4" aria-hidden />
+                      </Link>
+                    </div>
+                  )}
+                  <div className="flex items-center gap-2 px-4 py-3 text-sm font-medium text-foreground">
+                    <Film className="h-4 w-4 shrink-0 text-gold/80" aria-hidden />
+                    {video.title}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         )}
       </TabsContent>
       <TabsContent value="photo" className="mt-6 focus-visible:outline-none focus-visible:ring-2">

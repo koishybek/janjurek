@@ -99,12 +99,12 @@ export const people: Person[] = [
       videos: [
         {
           title: "Воспоминания детей об Акане",
-          url: "https://example.com/video1",
+          url: "https://www.youtube.com/watch?v=ScMzIvxBSi4",
           storagePath: "people/akan-nurgali-akhmetpekuly/videos/interview-children.mp4",
         },
         {
           title: "Интервью коллег из лесничества",
-          url: "https://example.com/video2",
+          url: "https://youtu.be/86m4RC_ADEY",
           storagePath: "people/akan-nurgali-akhmetpekuly/videos/forestry-colleagues.mp4",
         },
       ],

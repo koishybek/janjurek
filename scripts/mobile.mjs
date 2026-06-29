@@ -1,0 +1,20 @@
+import puppeteer from "puppeteer-core";
+const CHROME = "C:/Program Files/Google/Chrome/Application/chrome.exe";
+const OUT = "C:/Users/koish/AppData/Local/Temp/janjurek-shots2";
+const browser = await puppeteer.launch({ executablePath: CHROME, headless: "new", args: ["--no-sandbox","--hide-scrollbars"], defaultViewport: { width: 390, height: 844, isMobile: true, hasTouch: true } });
+const shoot = async (url, name) => {
+  const p = await browser.newPage();
+  await p.setViewport({ width: 390, height: 844, isMobile: true, hasTouch: true });
+  await p.goto(url, { waitUntil: "networkidle0", timeout: 60000 });
+  await p.evaluate(async () => { for (let y=0;y<document.body.scrollHeight;y+=500){ window.scrollTo(0,y); await new Promise(r=>setTimeout(r,80)); } window.scrollTo(0,0); });
+  await new Promise(r=>setTimeout(r,500));
+  await p.screenshot({ path: `${OUT}/${name}.png` });
+  const overflow = await p.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 2);
+  console.log(name, "horizontal-overflow:", overflow);
+  await p.close();
+};
+await shoot("http://localhost:3000/", "m_landing");
+await shoot("http://localhost:3000/memory/akan-nurgali-akhmetpekuly", "m_memory");
+await shoot("http://localhost:3000/create", "m_create");
+await browser.close();
+console.log("mobile done");

@@ -14,7 +14,11 @@ export const firebaseCollections = {
   people: process.env.NEXT_PUBLIC_FIREBASE_PEOPLE_COLLECTION ?? "people",
   relations: process.env.NEXT_PUBLIC_FIREBASE_RELATIONS_COLLECTION ?? "relations",
   tributes: process.env.NEXT_PUBLIC_FIREBASE_TRIBUTES_COLLECTION ?? "tributes",
+  leads: process.env.NEXT_PUBLIC_FIREBASE_LEADS_COLLECTION ?? "leads",
 };
+
+/** WhatsApp number that receives memorial requests (digits only, intl format). */
+export const whatsappNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "77776291638";
 
 export const mediaRootFolder = process.env.NEXT_PUBLIC_FIREBASE_MEDIA_ROOT ?? "people";
 

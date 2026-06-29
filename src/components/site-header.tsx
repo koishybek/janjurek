@@ -9,8 +9,8 @@ import { useSearchDialog } from "@/components/search-dialog-context";
 
 const links = [
   { href: "/#about", label: "О проекте" },
-  { href: "/#jeti-ata", label: "Жеті ата" },
-  { href: "/#guide", label: "Инструкция" },
+  { href: "/#how", label: "Как это работает" },
+  { href: "/#pricing", label: "Цены" },
   { href: "/#contacts", label: "Контакты" },
 ];
 
@@ -89,7 +89,7 @@ export function SiteHeader() {
             <Search className="h-4 w-4" />
           </button>
           <Link
-            href="https://wa.me/77000000000"
+            href="https://wa.me/77776291638"
             target="_blank"
             rel="noopener noreferrer"
             aria-label="WhatsApp"
@@ -121,7 +121,7 @@ export function SiteHeader() {
             className="ml-1 inline-flex items-center gap-1.5 rounded-full bg-gold px-4 py-2 text-sm font-semibold text-black transition hover:bg-gold/90 hover:shadow-[0_0_28px_-8px_rgba(227,194,141,0.8)]"
           >
             <Plus className="h-4 w-4" />
-            <span className="hidden sm:inline">Создать</span>
+            <span className="hidden sm:inline">Оставить заявку</span>
           </Link>
         </div>
       </div>

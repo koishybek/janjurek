@@ -104,7 +104,7 @@ export function Hero() {
           <button
             type="button"
             onClick={openDialog}
-            className="group inline-flex items-center justify-center gap-2 rounded-full bg-gold px-7 py-3.5 text-sm font-semibold text-black transition hover:bg-gold/90 hover:shadow-[0_0_36px_-6px_rgba(227,194,141,0.7)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2 focus-visible:ring-offset-black"
+            className="gold-cta group inline-flex items-center justify-center gap-2 rounded-full px-7 py-3.5 text-sm font-semibold text-black transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2 focus-visible:ring-offset-black"
           >
             <Search className="h-4 w-4" />
             Найти страницу памяти
@@ -113,7 +113,7 @@ export function Hero() {
             href="/create"
             className="group inline-flex items-center justify-center gap-2 rounded-full border border-white/25 bg-white/[0.04] px-7 py-3.5 text-sm font-medium text-white/90 backdrop-blur-sm transition hover:border-gold/70 hover:text-gold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60"
           >
-            Создать страницу
+            Оставить заявку
             <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
           </Link>
         </motion.div>

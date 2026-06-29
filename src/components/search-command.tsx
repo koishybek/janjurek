@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
 import { Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -44,7 +43,6 @@ export function SearchCommandButton({ label = "Поиск памяти", classNa
 }
 
 export function SearchCommandDialog() {
-  const router = useRouter();
   const { open, setOpen } = useSearchDialog();
   const { people, loading } = usePeopleData();
   const [query, setQuery] = useState("");
@@ -80,7 +78,7 @@ export function SearchCommandDialog() {
   const handleSelect = (slug: string) => {
     setOpen(false);
     setQuery("");
-    router.push(`/memory/${slug}`);
+    window.open(`/memory/${slug}`, "_blank", "noopener,noreferrer");
   };
 
   const trimmedQuery = query.trim();

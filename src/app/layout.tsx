@@ -28,6 +28,8 @@ export default function RootLayout({
   return (
     <html lang="ru" suppressHydrationWarning>
       <body className={`${inter.variable} ${cormorant.variable} min-h-screen`}>
+        {/* Fixed film-grain overlay for cinematic texture (kept subtle, non-interactive) */}
+        <div className="grain pointer-events-none fixed inset-0 z-[60] opacity-[0.035] mix-blend-soft-light" aria-hidden />
         <SearchDialogRoot>{children}</SearchDialogRoot>
       </body>
     </html>

@@ -15,7 +15,7 @@ export function PersonCard({ person }: PersonCardProps) {
   const avatarSrc = person.media?.photos?.[0]?.src;
 
   return (
-    <Card className="rounded-xl border-white/10 bg-white/[0.02] shadow-none transition-colors hover:border-white/20">
+    <Card className="rounded-2xl surface shadow-none">
       <CardHeader className="flex flex-col gap-6 p-8 sm:flex-row sm:items-start">
         <Avatar className="h-28 w-28 shrink-0 border border-gold/30 grayscale">
           {avatarSrc ? <AvatarImage src={avatarSrc} alt={`Портрет: ${fullName || person.lastName}`} /> : null}

@@ -9,7 +9,6 @@ import { SearchCommandButton } from "@/components/search-command";
 import { people, relations } from "@data/people";
 import { Button } from "@/components/ui/button";
 import { FamilyTreeLazy } from "@/components/family-tree-lazy";
-import { JetiAtaChain } from "@/components/jeti-ata";
 import { CtaBand } from "@/components/cta-band";
 import { exampleMemorial } from "@data/examplePerson";
 import {
@@ -23,9 +22,10 @@ import {
   BookText,
   ArrowRight,
   ArrowUpRight,
+  Check,
 } from "lucide-react";
 
-const PANEL = "rounded-2xl border border-white/10 bg-white/[0.02]";
+const PANEL = "rounded-2xl surface";
 
 export default function HomePage() {
   const highlightedPerson = people[0];
@@ -62,7 +62,7 @@ export default function HomePage() {
                 { value: <span>∞</span>, label: "срок бережного хранения" },
               ].map((stat, i) => (
                 <div key={i} className="flex flex-col items-center gap-2 px-8 py-10 text-center">
-                  <span className="font-serif text-5xl text-gold lg:text-6xl">{stat.value}</span>
+                  <span className="nums font-serif text-5xl text-gold lg:text-6xl">{stat.value}</span>
                   <span className="text-sm uppercase tracking-[0.18em] text-muted-foreground">{stat.label}</span>
                 </div>
               ))}
@@ -73,7 +73,7 @@ export default function HomePage() {
         {/* ── Search + quick actions ── */}
         <section id="search" className="grid gap-6 lg:grid-cols-[1.6fr_1fr]">
           <Reveal className="h-full">
-            <div className={`${PANEL} glow-card flex h-full flex-col p-10`}>
+            <div className={`${PANEL} surface-hover flex h-full flex-col p-10`}>
               <SectionHeading eyebrow="Архив памяти" title="Поиск памяти" />
               <p className="mt-5 text-base leading-8 text-muted-foreground">
                 Открывайте истории по имени или фамилии. Используйте горячую клавишу{" "}
@@ -86,49 +86,18 @@ export default function HomePage() {
             </div>
           </Reveal>
           <Reveal delay={0.1} className="h-full">
-            <div className={`${PANEL} glow-card flex h-full flex-col p-10`}>
-              <SectionHeading title="Создать страницу" />
+            <div className={`${PANEL} surface-hover flex h-full flex-col p-10`}>
+              <SectionHeading title="Оставить заявку" />
               <p className="mt-5 flex-1 text-base leading-8 text-muted-foreground">
-                Соберите историю близкого человека за пять простых шагов — получите ссылку и QR-код для родных.
+                Оставьте заявку — менеджер свяжется, поможет собрать материалы и оформит страницу памяти с QR-кодом.
               </p>
               <Magnetic className="mt-8 w-full">
-                <Button asChild className="w-full gap-2 rounded-full bg-gold py-6 text-base font-semibold text-black hover:bg-gold/90">
+                <Button asChild className="w-full gap-2 gold-cta rounded-full py-6 text-base font-semibold text-black">
                   <Link href="/create">
-                    Создать <ArrowRight className="h-4 w-4" />
+                    Оставить заявку <ArrowRight className="h-4 w-4" />
                   </Link>
                 </Button>
               </Magnetic>
-            </div>
-          </Reveal>
-        </section>
-
-        {/* ── Жеті ата teaser ── */}
-        <section id="jeti-ata" className="space-y-10">
-          <Reveal>
-            <SectionHeading
-              eyebrow="Жеті ата"
-              title="Помните семь поколений"
-              description="«Жеті атасын білген ұл — жеті жұрттың қамын жейді». Знание своего рода до седьмого колена — основа казахской культуры. JANJUREK помогает сохранить эту связь и передать её детям и внукам."
-            />
-          </Reveal>
-          <Reveal delay={0.1}>
-            <div className={`${PANEL} p-8 sm:p-10`}>
-              <JetiAtaChain />
-              <div className="mt-9 flex flex-col gap-5 border-t border-white/10 pt-8 sm:flex-row sm:items-center sm:justify-between">
-                <p className="max-w-xl text-base leading-8 text-muted-foreground">
-                  Наведите на любое поколение, чтобы увидеть связь. На странице памяти эта цепочка
-                  оживает реальными именами предков.
-                </p>
-                <Magnetic className="shrink-0">
-                  <Button
-                    asChild
-                    variant="outline"
-                    className="rounded-full border-gold/40 px-7 py-6 text-base text-gold hover:bg-gold/10 hover:text-gold"
-                  >
-                    <Link href="/create">Построить своё древо</Link>
-                  </Button>
-                </Magnetic>
-              </div>
             </div>
           </Reveal>
         </section>
@@ -171,7 +140,7 @@ export default function HomePage() {
               />
               <Magnetic className="shrink-0">
                 <Button asChild className="gap-2 rounded-full bg-primary px-7 py-6 text-base text-primary-foreground hover:bg-primary/90">
-                  <Link href="/memory/example-moon">Открыть демо «Лунная история»</Link>
+                  <a href="/memory/example-moon" target="_blank" rel="noopener noreferrer">Открыть демо «Лунная история»</a>
                 </Button>
               </Magnetic>
             </div>
@@ -179,7 +148,7 @@ export default function HomePage() {
           <div className="grid gap-7 lg:grid-cols-2">
             {exampleCards.map((card, i) => (
               <Reveal key={card.href} delay={i * 0.1}>
-                <Link href={card.href} className={`${PANEL} glow-card group block overflow-hidden`}>
+                <a href={card.href} target="_blank" rel="noopener noreferrer" className={`${PANEL} surface-hover group block overflow-hidden`}>
                   <div className="relative h-72 w-full overflow-hidden">
                     <Parallax amount={28} className="absolute inset-0">
                       <Image
@@ -202,7 +171,7 @@ export default function HomePage() {
                       <ArrowUpRight className="h-5 w-5" />
                     </span>
                   </div>
-                </Link>
+                </a>
               </Reveal>
             ))}
           </div>
@@ -221,7 +190,7 @@ export default function HomePage() {
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {memoryFeatures.map((feature, i) => (
               <Reveal key={feature.title} delay={(i % 4) * 0.08}>
-                <div className={`${PANEL} glow-card h-full p-8`}>
+                <div className={`${PANEL} surface-hover h-full p-8`}>
                   <span className="grid h-12 w-12 place-items-center rounded-xl border border-gold/20 bg-gold/5">
                     <feature.icon className="h-6 w-6 text-gold" strokeWidth={1.5} aria-hidden />
                   </span>
@@ -248,7 +217,7 @@ export default function HomePage() {
             </p>
           </Reveal>
           <Reveal delay={0.12}>
-            <div className={`${PANEL} glow-card p-10`}>
+            <div className={`${PANEL} surface-hover p-10`}>
               <h3 className="font-serif text-2xl text-foreground">Что мы предлагаем</h3>
               <ul className="mt-7 space-y-5 text-base text-muted-foreground">
                 {[
@@ -268,26 +237,71 @@ export default function HomePage() {
           </Reveal>
         </section>
 
-        {/* ── Guide ── */}
-        <section id="guide" className="space-y-12">
+        {/* ── How it works (5 steps) ── */}
+        <section id="how" className="space-y-12">
           <Reveal>
             <SectionHeading
               eyebrow="Как это работает"
-              title="Инструкция по запуску страницы"
-              description="Следуйте простым шагам, чтобы подготовить материалы и передать их команде JANJUREK."
+              title="Пять шагов до страницы памяти"
+              description="Вам не нужно ничего настраивать — оставьте заявку, а мы возьмём оформление на себя и привезём готовые QR-таблички."
+              align="center"
             />
           </Reveal>
-          <div className="grid gap-7 lg:grid-cols-3">
-            {guideSteps.map((step, i) => (
-              <Reveal key={step.title} delay={i * 0.1}>
-                <div className={`${PANEL} glow-card h-full p-10`}>
-                  <span className="font-serif text-5xl text-gold/80">0{step.order}</span>
-                  <h3 className="mt-6 font-serif text-2xl text-foreground">{step.title}</h3>
-                  <p className="mt-4 text-base leading-8 text-muted-foreground">{step.description}</p>
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-5">
+            {howSteps.map((step, i) => (
+              <Reveal key={step.title} delay={i * 0.08}>
+                <div className={`${PANEL} surface-hover flex h-full flex-col p-7`}>
+                  <span className="grid h-11 w-11 place-items-center rounded-full border border-gold/40 font-serif text-lg text-gold">
+                    {i + 1}
+                  </span>
+                  <h3 className="mt-5 font-serif text-lg leading-tight text-foreground">{step.title}</h3>
+                  <p className="mt-2.5 text-sm leading-7 text-muted-foreground">{step.description}</p>
                 </div>
               </Reveal>
             ))}
           </div>
+        </section>
+
+        {/* ── Pricing / QR tablets ── */}
+        <section id="pricing" className="space-y-12">
+          <Reveal>
+            <SectionHeading
+              eyebrow="Стоимость"
+              title="Страница памяти с QR-табличками"
+              description="Один тариф — всё включено. Мы оформляем страницу и изготавливаем две прочные QR-таблички для установки на памятник."
+              align="center"
+            />
+          </Reveal>
+          <Reveal delay={0.1}>
+            <div className="mx-auto grid max-w-4xl gap-6 lg:grid-cols-[1fr_1.1fr]">
+              <div className={`${PANEL} surface-hover flex flex-col justify-between p-10`}>
+                <div>
+                  <p className="text-sm uppercase tracking-[0.2em] text-muted-foreground">Мемориал «под ключ»</p>
+                  <div className="mt-4 flex items-end gap-2">
+                    <span className="nums font-serif text-6xl text-gold">19 900</span>
+                    <span className="mb-2 text-lg text-muted-foreground">₸</span>
+                  </div>
+                  <p className="mt-2 text-sm text-muted-foreground">Единоразово. Стоимость уточняется менеджером.</p>
+                </div>
+                <Magnetic className="mt-8 w-full">
+                  <Button asChild className="w-full gap-2 gold-cta rounded-full py-6 text-base font-semibold text-black">
+                    <Link href="/create">Оставить заявку <ArrowRight className="h-4 w-4" /></Link>
+                  </Button>
+                </Magnetic>
+              </div>
+              <div className={`${PANEL} p-10`}>
+                <h3 className="font-serif text-2xl text-foreground">Что входит</h3>
+                <ul className="mt-6 space-y-4 text-base text-muted-foreground">
+                  {pricingIncludes.map((item) => (
+                    <li key={item} className="flex gap-3">
+                      <Check className="mt-1 h-5 w-5 shrink-0 text-gold" />
+                      <span className="leading-7">{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </Reveal>
         </section>
 
         {/* ── Contacts ── */}
@@ -310,8 +324,8 @@ export default function HomePage() {
               <div>
                 <dt className="text-sm uppercase tracking-[0.2em] text-muted-foreground">Телефон</dt>
                 <dd className="mt-1.5">
-                  <a className="text-lg text-gold underline-offset-4 hover:underline" href="tel:+77000000000">
-                    +7 (700) 000-00-00
+                  <a className="text-lg text-gold underline-offset-4 hover:underline" href="tel:+77776291638">
+                    +7 777 629 16 38
                   </a>
                 </dd>
               </div>
@@ -320,7 +334,7 @@ export default function HomePage() {
                 <dd className="mt-2.5 flex gap-5 text-lg">
                   <a
                     className="text-gold underline-offset-4 hover:underline"
-                    href="https://wa.me/77000000000"
+                    href="https://wa.me/77776291638"
                     target="_blank"
                     rel="noopener noreferrer"
                   >
@@ -339,16 +353,16 @@ export default function HomePage() {
             </dl>
           </Reveal>
           <Reveal delay={0.12}>
-            <div className={`${PANEL} glow-card flex h-full flex-col p-10`}>
-              <h3 className="font-serif text-2xl text-foreground">Хотите узнать о запуске?</h3>
+            <div className={`${PANEL} surface-hover flex h-full flex-col p-10`}>
+              <h3 className="font-serif text-2xl text-foreground">Остались вопросы?</h3>
               <p className="mt-5 flex-1 text-base leading-8 text-muted-foreground">
-                Напишите нам с пометкой «Janjurek» и кратко опишите, чью историю хотите сохранить. Мы
-                сообщим вам, когда сервис станет доступен.
+                Напишите нам в WhatsApp — поможем оформить страницу памяти, подскажем по материалам и
+                срокам изготовления QR-табличек.
               </p>
               <Magnetic className="mt-8 w-full">
                 <Button asChild className="w-full rounded-full bg-primary py-6 text-base text-primary-foreground hover:bg-primary/90">
-                  <a href="mailto:memory@janjurek.kz?subject=Запрос%20на%20старт%20Janjurek">
-                    Отправить письмо
+                  <a href="https://wa.me/77776291638" target="_blank" rel="noopener noreferrer">
+                    Написать в WhatsApp
                   </a>
                 </Button>
               </Magnetic>
@@ -377,23 +391,19 @@ const memoryFeatures = [
   { icon: Star, title: "Избранное", description: "Любимые фразы, книги, места и привычки человека." },
 ];
 
-const guideSteps = [
-  {
-    order: 1,
-    title: "Соберите материалы",
-    description:
-      "Подготовьте фотографии, видеозаписи, документы и устные воспоминания родных. Чем подробнее материалы, тем живее получится история.",
-  },
-  {
-    order: 2,
-    title: "Опишите биографию",
-    description:
-      "Зафиксируйте ключевые даты, места, родовые связи, трудовой путь, награды и семейные традиции. Используйте подсказки нашей анкеты.",
-  },
-  {
-    order: 3,
-    title: "Передайте данные команде",
-    description:
-      "Напишите на memory@janjurek.kz или в мессенджер. Мы поможем структурировать архив и сообщим, когда страница памяти будет опубликована.",
-  },
+const howSteps = [
+  { title: "Оставьте заявку", description: "Имя, телефон и пара слов о человеке — это всё, что нужно для старта." },
+  { title: "Менеджер свяжется", description: "Мы перезвоним, ответим на вопросы и пришлём удобную анкету." },
+  { title: "Передаёте материалы", description: "Фотографии и видео (через YouTube) — без тяжёлых загрузок на сайт." },
+  { title: "Оформляем страницу", description: "Собираем биографию, галерею, видео и родословную в единую историю." },
+  { title: "Получаете QR-таблички", description: "Две прочные таблички с QR-кодом для установки на памятник." },
+];
+
+const pricingIncludes = [
+  "Персональная страница памяти с уникальной ссылкой",
+  "Биография, галерея фотографий и видео с YouTube",
+  "Родословное древо и заметки близких",
+  "Две QR-таблички для памятника",
+  "Поиск страницы по имени и фамилии",
+  "Помощь менеджера в оформлении",
 ];
