@@ -3,6 +3,7 @@
 import { useMemo } from "react";
 import { useRouter } from "next/navigation";
 import type { Edge, Person } from "@data/people";
+import { buildTree, type TreeNode } from "@/lib/family-tree-model";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
@@ -11,11 +12,6 @@ export type FamilyTreeProps = {
   people: Person[];
   relations: Edge[];
   variant?: "preview" | "full";
-};
-
-type TreeNode = {
-  person: Person | undefined;
-  children: TreeNode[];
 };
 
 export function FamilyTree({ rootId, people, relations, variant = "full" }: FamilyTreeProps) {
@@ -56,24 +52,21 @@ function TreeNodeCard({ node, depth, depthLimit, onNavigate }: TreeNodeCardProps
     return null;
   }
 
-  const canNavigate = Boolean(person.slug);
   const showChildren = depth < depthLimit && node.children.length > 0;
 
   return (
     <div className="flex flex-col items-center gap-8">
-      <button
-        type="button"
-        onClick={() => canNavigate && onNavigate(person.slug)}
-        className={cn(
-          "min-w-[220px] rounded-3xl border border-border/40 bg-secondary/40 p-4 text-left shadow-lg transition hover:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent",
-          canNavigate ? "cursor-pointer" : "cursor-default"
-        )}
-        aria-label={`Открыть страницу памяти: ${person.lastName} ${person.firstName}`}
-      >
-        <p className="font-serif text-lg text-accent">{[person.lastName, person.firstName].filter(Boolean).join(" ")}</p>
-        <p className="text-sm text-muted-foreground">{person.patronymic ?? "—"}</p>
-        <p className="mt-2 text-xs uppercase tracking-wider text-muted-foreground/80">{person.years ?? "Годы не указаны"}</p>
-      </button>
+      <div className="flex items-center gap-4">
+        <PersonButton person={person} onNavigate={onNavigate} />
+        {node.spouse ? (
+          <>
+            <span className="text-xl text-gold/70" title="в браке">
+              ⚭<span className="sr-only">в браке с</span>
+            </span>
+            <PersonButton person={node.spouse} onNavigate={onNavigate} />
+          </>
+        ) : null}
+      </div>
       {showChildren ? (
         <div className="relative flex flex-wrap items-start justify-center gap-8 lg:gap-12">
           <span className="absolute top-[-2rem] left-1/2 h-8 w-px -translate-x-1/2 bg-border/50" aria-hidden />
@@ -89,29 +82,27 @@ function TreeNodeCard({ node, depth, depthLimit, onNavigate }: TreeNodeCardProps
   );
 }
 
-function buildTree(rootId: string, people: Person[], relations: Edge[]): TreeNode | null {
-  const personMap = new Map(people.map((item) => [item.id, item]));
-  const childrenMap = new Map<string, string[]>();
+type PersonButtonProps = {
+  person: Person;
+  onNavigate: (slug: string) => void;
+};
 
-  relations.forEach((relation) => {
-    if (relation.relation === "parent") {
-      const existing = childrenMap.get(relation.fromId) ?? [];
-      childrenMap.set(relation.fromId, [...existing, relation.toId]);
-    }
-  });
+function PersonButton({ person, onNavigate }: PersonButtonProps) {
+  const canNavigate = Boolean(person.slug);
 
-  if (!personMap.has(rootId)) {
-    return null;
-  }
-
-  const build = (id: string): TreeNode => {
-    const person = personMap.get(id);
-    const childrenIds = childrenMap.get(id) ?? [];
-    return {
-      person,
-      children: childrenIds.map((childId) => build(childId)),
-    };
-  };
-
-  return build(rootId);
+  return (
+    <button
+      type="button"
+      onClick={() => canNavigate && onNavigate(person.slug)}
+      className={cn(
+        "min-w-[220px] rounded-3xl border border-border/40 bg-secondary/40 p-4 text-left shadow-lg transition hover:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent",
+        canNavigate ? "cursor-pointer" : "cursor-default"
+      )}
+      aria-label={`Открыть страницу памяти: ${person.lastName} ${person.firstName}`}
+    >
+      <p className="font-serif text-lg text-accent">{[person.lastName, person.firstName].filter(Boolean).join(" ")}</p>
+      <p className="text-sm text-muted-foreground">{person.patronymic ?? "—"}</p>
+      <p className="mt-2 text-xs uppercase tracking-wider text-muted-foreground/80">{person.years ?? "Годы не указаны"}</p>
+    </button>
+  );
 }

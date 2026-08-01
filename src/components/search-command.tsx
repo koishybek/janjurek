@@ -66,12 +66,17 @@ export function SearchCommandDialog() {
 
   const commandItems = useMemo(
     () =>
-      people.map((person) => ({
-        id: person.id,
-        slug: person.slug,
-        name: [person.lastName, person.firstName, person.patronymic].filter(Boolean).join(" "),
-        description: person.mainOccupation ?? "Без описания",
-      })),
+      people.map((person) => {
+        const name = [person.lastName, person.firstName, person.patronymic].filter(Boolean).join(" ");
+        return {
+          id: person.id,
+          slug: person.slug,
+          name,
+          // cmdk filters on `value`, so alternative spellings are matchable without being shown.
+          searchValue: [name, ...(person.altNames ?? [])].join(" "),
+          description: person.mainOccupation ?? "Без описания",
+        };
+      }),
     [people]
   );
 
@@ -110,7 +115,7 @@ export function SearchCommandDialog() {
         {showResults ? (
           <CommandGroup heading="Доступные страницы памяти">
             {commandItems.map((item) => (
-              <CommandItem key={item.id} value={item.name} onSelect={() => handleSelect(item.slug)}>
+              <CommandItem key={item.id} value={item.searchValue} onSelect={() => handleSelect(item.slug)}>
                 <div>
                   <p className="font-medium text-foreground">{item.name}</p>
                   <p className="text-xs text-muted-foreground">{item.description}</p>
