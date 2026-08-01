@@ -8,6 +8,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 
+/**
+ * Sample tributes. They describe the demo memorial specifically, so they must never
+ * appear on a real person's page — a family would see fabricated words from people
+ * who do not exist.
+ */
+const DEMO_SLUG = "akan-nurgali-akhmetpekuly";
+
 const seedTributes: Omit<Tribute, "slug">[] = [
   {
     id: "seed-1",
@@ -35,8 +42,8 @@ type MemoryWallProps = {
 };
 
 export function MemoryWall({ slug, personName }: MemoryWallProps) {
-  const [tributes, setTributes] = useState<PendingTribute[]>(
-    seedTributes.map((t) => ({ ...t, slug }))
+  const [tributes, setTributes] = useState<PendingTribute[]>(() =>
+    slug === DEMO_SLUG ? seedTributes.map((t) => ({ ...t, slug })) : []
   );
   const [open, setOpen] = useState(false);
   const [author, setAuthor] = useState("");
@@ -160,6 +167,12 @@ export function MemoryWall({ slug, personName }: MemoryWallProps) {
 
       {notice ? (
         <p className="rounded-lg border border-gold/20 bg-gold/5 px-4 py-3 text-sm text-gold/90">{notice}</p>
+      ) : null}
+
+      {tributes.length === 0 ? (
+        <p className="rounded-2xl border border-dashed border-white/10 bg-white/[0.02] p-10 text-center text-sm text-muted-foreground">
+          Здесь пока нет заметок. Станьте первым, кто поделится воспоминанием.
+        </p>
       ) : null}
 
       <div className="grid gap-4 sm:grid-cols-2">
