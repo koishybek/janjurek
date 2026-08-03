@@ -6,6 +6,7 @@ import {
   buildTree,
   findRootAncestor,
   getRelatives,
+  toGenerations,
 } from "@/lib/family-tree-model";
 
 const person = (id: string): Person => ({
@@ -88,6 +89,46 @@ describe("buildRelationIndex", () => {
     expect(index.spouseOf.get("dad")).toBe("mum");
     expect(index.spouseOf.get("mum")).toBe("dad");
   });
+
+  it("keeps the first marriage rather than letting a later one overwrite it", () => {
+    const index = buildRelationIndex([
+      { fromId: "a", toId: "b", relation: "spouse" },
+      { fromId: "a", toId: "c", relation: "spouse" },
+    ]);
+
+    expect(index.spouseOf.get("a")).toBe("b");
+    expect(index.spouseEdgeCount.get("a")).toBe(2);
+    expect(index.spouseEdgeCount.get("b")).toBe(1);
+  });
+});
+
+describe("buildTree with remarriage", () => {
+  it("does not adopt a spouse's own children into an ambiguous couple", () => {
+    // 'a' married twice, so children of 'b' must not be presented as children of a⚭b.
+    const cast = [person("a"), person("b"), person("c"), person("kidB")];
+    const edges: Edge[] = [
+      { fromId: "a", toId: "b", relation: "spouse" },
+      { fromId: "a", toId: "c", relation: "spouse" },
+      { fromId: "b", toId: "kidB", relation: "parent" },
+    ];
+
+    const tree = buildTree("a", cast, edges);
+
+    expect(tree?.spouse?.id).toBe("b");
+    expect(tree?.children).toEqual([]);
+  });
+
+  it("still pools children for a couple married only to each other", () => {
+    const cast = [person("a"), person("b"), person("kid")];
+    const edges: Edge[] = [
+      { fromId: "a", toId: "b", relation: "spouse" },
+      { fromId: "b", toId: "kid", relation: "parent" },
+    ];
+
+    const tree = buildTree("a", cast, edges);
+
+    expect(tree?.children.map((c) => c.person?.id)).toEqual(["kid"]);
+  });
 });
 
 describe("getRelatives", () => {
@@ -126,6 +167,50 @@ describe("getRelatives", () => {
     const kin = getRelatives("kid", fixture.people, index);
 
     expect(kin.father).toBeUndefined();
+  });
+});
+
+describe("toGenerations", () => {
+  it("returns nothing for an empty tree", () => {
+    expect(toGenerations(null)).toEqual([]);
+  });
+
+  it("lays the Уак line out one generation per row", () => {
+    const rows = toGenerations(buildTree("kabdolla-omaruly", people, relations));
+
+    expect(rows).toHaveLength(2);
+    expect(rows[0].groups[0].nodes.map((n) => n.person?.id)).toEqual(["kabdolla-omaruly"]);
+    expect(rows[0].groups[0].nodes[0].spouse?.id).toBe("zeinep-temirkankyzy");
+    expect(rows[1].groups[0].nodes.map((n) => n.person?.id)).toEqual(["zhumagazy-khabdullin"]);
+    expect(rows[1].groups[0].nodes[0].spouse?.id).toBe("maken-saduakaskyzy");
+  });
+
+  it("labels a child row with the parents it descends from", () => {
+    const rows = toGenerations(buildTree("kabdolla-omaruly", people, relations));
+
+    expect(rows[1].groups[0].parentLabel).toContain("Омарулы Кабдолла");
+    expect(rows[1].groups[0].parentLabel).toContain("Темирканкызы Зейнеп");
+    // The root row descends from nobody on the page.
+    expect(rows[0].groups[0].parentLabel).toBeUndefined();
+  });
+
+  it("keeps siblings' children in separate groups so parentage stays readable", () => {
+    const branched = {
+      people: [person("root"), person("a"), person("b"), person("a1"), person("b1")],
+      relations: [
+        { fromId: "root", toId: "a", relation: "parent" },
+        { fromId: "root", toId: "b", relation: "parent" },
+        { fromId: "a", toId: "a1", relation: "parent" },
+        { fromId: "b", toId: "b1", relation: "parent" },
+      ] as Edge[],
+    };
+    const rows = toGenerations(buildTree("root", branched.people, branched.relations));
+
+    expect(rows).toHaveLength(3);
+    expect(rows[1].groups).toHaveLength(1);
+    expect(rows[1].groups[0].nodes.map((n) => n.person?.id)).toEqual(["a", "b"]);
+    expect(rows[2].groups).toHaveLength(2);
+    expect(rows[2].groups.map((g) => g.nodes.map((n) => n.person?.id))).toEqual([["a1"], ["b1"]]);
   });
 });
 

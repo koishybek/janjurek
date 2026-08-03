@@ -112,6 +112,9 @@ export function MemoryPageClient({ initialPerson, slug }: MemoryPageClientProps)
     // and reachable, instead of showing this person as an orphan.
     const treeRootId = findRootAncestor(person.id, relationIndex);
     const hasRelations = relations.some((edge) => edge.fromId === person.id || edge.toId === person.id);
+    // Name the line by the ancestor's recorded `rod`, not by a surname: someone who
+    // married in carries another name, and a wife's surname is not the family's род.
+    const lineRod = seedPeople.find((item) => item.id === treeRootId)?.rod;
 
     return (
       <>
@@ -146,7 +149,8 @@ export function MemoryPageClient({ initialPerson, slug }: MemoryPageClientProps)
               <p className="text-xs font-medium uppercase tracking-[0.28em] text-gold/80">Родословная</p>
               <h2 className="font-serif text-3xl text-foreground">Родовое древо</h2>
               <p className="max-w-2xl text-base text-muted-foreground">
-                Связь поколений семьи {person.lastName || "героя"}. Нажмите на родственников, чтобы перейти к их страницам.
+                {lineRod ? `Поколения рода ${lineRod}` : "Связь поколений"} — от самого раннего
+                известного предка. Нажмите на родственников, чтобы перейти к их страницам.
               </p>
             </div>
             {relatives ? <KinshipLinks relatives={relatives} /> : null}

@@ -16,6 +16,12 @@ export type RelationIndex = {
   childrenByParent: Map<string, string[]>;
   parentsByChild: Map<string, ParentRef[]>;
   spouseOf: Map<string, string>;
+  /**
+   * Spouse edges per person. More than one means remarriage, and then "the couple"
+   * is ambiguous — children must not be pooled, or a child of the first marriage
+   * would be shown as a child of the second.
+   */
+  spouseEdgeCount: Map<string, number>;
 };
 
 /**
@@ -26,6 +32,9 @@ export function buildRelationIndex(relations: Edge[]): RelationIndex {
   const childrenByParent = new Map<string, string[]>();
   const parentsByChild = new Map<string, ParentRef[]>();
   const spouseOf = new Map<string, string>();
+  const spouseEdgeCount = new Map<string, number>();
+
+  const countSpouse = (id: string) => spouseEdgeCount.set(id, (spouseEdgeCount.get(id) ?? 0) + 1);
 
   for (const relation of relations) {
     if (relation.relation === "parent") {
@@ -38,12 +47,15 @@ export function buildRelationIndex(relations: Edge[]): RelationIndex {
         { id: relation.fromId, role: relation.role },
       ]);
     } else if (relation.relation === "spouse") {
-      spouseOf.set(relation.fromId, relation.toId);
-      spouseOf.set(relation.toId, relation.fromId);
+      // First edge wins, so a second marriage cannot silently replace the first.
+      if (!spouseOf.has(relation.fromId)) spouseOf.set(relation.fromId, relation.toId);
+      if (!spouseOf.has(relation.toId)) spouseOf.set(relation.toId, relation.fromId);
+      countSpouse(relation.fromId);
+      countSpouse(relation.toId);
     }
   }
 
-  return { childrenByParent, parentsByChild, spouseOf };
+  return { childrenByParent, parentsByChild, spouseOf, spouseEdgeCount };
 }
 
 export type Relatives = {
@@ -123,6 +135,58 @@ export function findRootAncestor(personId: string, index: RelationIndex, maxDept
   return personId;
 }
 
+export type GenerationGroup = {
+  /** The couple these nodes descend from — shown when a row holds more than one family. */
+  parentLabel?: string;
+  nodes: TreeNode[];
+};
+
+export type GenerationRow = {
+  depth: number;
+  groups: GenerationGroup[];
+};
+
+const shortName = (item: Person) => [item.lastName, item.firstName].filter(Boolean).join(" ");
+
+const coupleLabel = (node: TreeNode): string | undefined => {
+  if (!node.person) return undefined;
+  return node.spouse
+    ? `${shortName(node.person)} ⚭ ${shortName(node.spouse)}`
+    : shortName(node.person);
+};
+
+/**
+ * Flatten a tree into one row per generation, so the lineage reads top to bottom
+ * as a chain. Children of different siblings stay in separate groups — without
+ * that, a row of cousins would lose which parents each of them belongs to.
+ */
+export function toGenerations(tree: TreeNode | null, maxDepth = 64): GenerationRow[] {
+  if (!tree) {
+    return [];
+  }
+
+  const rows: GenerationRow[] = [{ depth: 0, groups: [{ nodes: [tree] }] }];
+
+  for (let depth = 0; depth < maxDepth; depth += 1) {
+    const nextGroups: GenerationGroup[] = [];
+
+    for (const group of rows[depth].groups) {
+      for (const node of group.nodes) {
+        if (node.children.length > 0) {
+          nextGroups.push({ parentLabel: coupleLabel(node), nodes: node.children });
+        }
+      }
+    }
+
+    if (nextGroups.length === 0) {
+      break;
+    }
+    rows.push({ depth: depth + 1, groups: nextGroups });
+  }
+
+  return rows;
+}
+
 /**
  * Build a descent tree rooted at `rootId`.
  *
@@ -137,7 +201,12 @@ export function buildTree(rootId: string, people: Person[], relations: Edge[]): 
     return null;
   }
 
-  const { childrenByParent, spouseOf } = buildRelationIndex(relations);
+  const { childrenByParent, spouseOf, spouseEdgeCount } = buildRelationIndex(relations);
+
+  // Children are pooled only for an unambiguous couple. With remarriage on either
+  // side, pooling would attribute a child of one marriage to the other.
+  const isExclusiveCouple = (a: string, b: string) =>
+    (spouseEdgeCount.get(a) ?? 0) === 1 && (spouseEdgeCount.get(b) ?? 0) === 1;
 
   // `path` carries the ancestors already rendered on this branch, so malformed data
   // (a person listed as their own ancestor) stops instead of recursing forever.
@@ -148,9 +217,10 @@ export function buildTree(rootId: string, people: Person[], relations: Edge[]): 
       nextPath.add(spouseId);
     }
 
+    const poolSpouseChildren = spouseId ? isExclusiveCouple(id, spouseId) : false;
     const childIds = [
       ...(childrenByParent.get(id) ?? []),
-      ...(spouseId ? childrenByParent.get(spouseId) ?? [] : []),
+      ...(poolSpouseChildren ? childrenByParent.get(spouseId!) ?? [] : []),
     ];
 
     const seen = new Set<string>();
