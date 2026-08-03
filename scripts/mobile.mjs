@@ -14,7 +14,7 @@ const shoot = async (url, name) => {
   await p.close();
 };
 await shoot("http://localhost:3000/", "m_landing");
-await shoot("http://localhost:3000/memory/akan-nurgali-akhmetpekuly", "m_memory");
+await shoot("http://localhost:3000/memory/zhumagazy-khabdullin", "m_memory");
 await shoot("http://localhost:3000/create", "m_create");
 await browser.close();
 console.log("mobile done");

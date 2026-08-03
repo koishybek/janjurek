@@ -42,3 +42,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# исходные анкеты семей — персональные данные, в репозиторий не кладём
+*.xlsx

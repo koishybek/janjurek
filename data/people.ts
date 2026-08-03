@@ -55,130 +55,20 @@ export const createEmptyPersonDraft = (): PersonDraft => ({
   },
 });
 
+/**
+ * Kinship is defined by these edges and nothing else. The `fatherName`, `spouse`
+ * and `children` fields on Person are free text written by families in four
+ * different name orders, so they are display labels only — never link targets.
+ */
 export type Edge = {
   fromId: string;
   toId: string;
-  relation: "parent" | "child" | "spouse";
+  relation: "parent" | "spouse";
+  /** On a parent edge: which parent this is. Required to link to the father specifically. */
+  role?: "father" | "mother";
 };
 
 export const people: Person[] = [
-  {
-    id: "akan-nurgali",
-    slug: "akan-nurgali-akhmetpekuly",
-    firstName: "Акан",
-    lastName: "Нургали",
-    patronymic: "Ахметпекулы",
-    years: "1926—1998",
-    zhuz: "Средний жуз",
-    rod: "Аргын",
-    plemya: "Мейрамсопы",
-    rod2: "Каракесек",
-    rod3: "Жалкыпас",
-    birthPlace: "с. Черемушки, Восточно-Казахстанская область, Казахстан",
-    burialPlace: "с. Черемушки, Восточно-Казахстанская область, Казахстан",
-    burialCoordsUrl: "https://maps.app.goo.gl/hSWtjDckbu2ewLSw6",
-    fatherName: "Ахметпек Нургалиулы",
-    studyPlace: "Семипалатинский лесотехнический техникум",
-    mainOccupation: "Лесничий в Катон-Карагайском районе",
-    awards: ["Медаль «За трудовую доблесть»", "Почётная грамота лесного хозяйства Восточного Казахстана"],
-    extraInfo:
-      "Собирал семейный архив, составлял карту переселения рода и записывал рассказы старших родственников.",
-    spouse: "Жамал Айдарбеккызы",
-    children: ["Ермек Аканулы", "Гүлнар Аканкызы", "Сауле Аканкызы"],
-    media: {
-      photos: [
-        {
-          src: "/images/sample-photo.jpg",
-          alt: "Акан Нургали с семьёй у дома в Черемушках",
-          storagePath: "people/akan-nurgali-akhmetpekuly/photos/family-portrait.jpg",
-        },
-        {
-          src: "/images/gallery/hero-stars.jpg",
-          alt: "Рабочая бригада в сосновом лесу",
-          storagePath: "people/akan-nurgali-akhmetpekuly/photos/forest-team.jpg",
-        },
-      ],
-      videos: [
-        {
-          title: "Воспоминания детей об Акане",
-          url: "https://www.youtube.com/watch?v=ScMzIvxBSi4",
-          storagePath: "people/akan-nurgali-akhmetpekuly/videos/interview-children.mp4",
-        },
-        {
-          title: "Интервью коллег из лесничества",
-          url: "https://youtu.be/86m4RC_ADEY",
-          storagePath: "people/akan-nurgali-akhmetpekuly/videos/forestry-colleagues.mp4",
-        },
-      ],
-      documents: [
-        {
-          title: "Трудовая книжка лесничего",
-          note: "Оригинал хранится в семейном архиве.",
-          storagePath: "people/akan-nurgali-akhmetpekuly/documents/work-book.pdf",
-        },
-        {
-          title: "Список наград и благодарностей",
-          storagePath: "people/akan-nurgali-akhmetpekuly/documents/awards-list.pdf",
-        },
-      ],
-    },
-  },
-  {
-    id: "ermek-akanuly",
-    slug: "ermek-akanuly",
-    firstName: "Ермек",
-    lastName: "Нургали",
-    patronymic: "Аканулы",
-    years: "1954—2016",
-    zhuz: "Средний жуз",
-    rod: "Аргын",
-    plemya: "Мейрамсопы",
-    rod2: "Каракесек",
-    rod3: "Жалкыпас",
-    birthPlace: "с. Черемушки, Восточно-Казахстанская область, Казахстан",
-    studyPlace: "Казахский политехнический институт",
-    mainOccupation: "Инженер-строитель",
-    awards: ["Медаль «Ветеран труда»"],
-    extraInfo: "Поддерживал семейный архив и собирал устные истории для передачи детям.",
-    spouse: "Асем Калибеккызы",
-    children: ["Меруерт Ермеккызы", "Айдын Ермекулы"],
-    media: {
-      photos: [
-        {
-          src: "/images/gallery/hero-stars.jpg",
-          alt: "Ермек Нургали на строительной площадке",
-          storagePath: "people/ermek-akanuly/photos/engineer-site.jpg",
-        },
-      ],
-      videos: [],
-      documents: [],
-    },
-  },
-  {
-    id: "gulnar-akanqyzy",
-    slug: "gulnar-akanqyzy",
-    firstName: "Гүлнар",
-    lastName: "Нургали",
-    patronymic: "Аканкызы",
-    years: "1961—",
-    zhuz: "Средний жуз",
-    rod: "Аргын",
-    plemya: "Мейрамсопы",
-    rod2: "Каракесек",
-    rod3: "Жалкыпас",
-    birthPlace: "с. Черемушки, Восточно-Казахстанская область, Казахстан",
-    studyPlace: "Алматинский государственный медицинский институт",
-    mainOccupation: "Врач-педиатр",
-    awards: ["Почётная грамота Минздрава Казахстана"],
-    extraInfo: "Организует ежегодные встречи семьи в память об Акана.",
-    spouse: "Нурболат Жанузаков",
-    children: ["Инкар Нурболаткызы"],
-    media: {
-      photos: [],
-      videos: [],
-      documents: [],
-    },
-  },
   {
     id: "kabdolla-omaruly",
     slug: "kabdolla-omaruly",
@@ -251,27 +141,19 @@ export const people: Person[] = [
   },
 ];
 
+// ── Род Уак: Кабдолла ⚭ Зейнеп → Жумагазы ⚭ Мәкен ──
 export const relations: Edge[] = [
-  {
-    fromId: "akan-nurgali",
-    toId: "ermek-akanuly",
-    relation: "parent",
-  },
-  {
-    fromId: "akan-nurgali",
-    toId: "gulnar-akanqyzy",
-    relation: "parent",
-  },
-  // ── Род Уак: Кабдолла ⚭ Зейнеп → Жумагазы ⚭ Мәкен ──
   {
     fromId: "kabdolla-omaruly",
     toId: "zhumagazy-khabdullin",
     relation: "parent",
+    role: "father",
   },
   {
     fromId: "zeinep-temirkankyzy",
     toId: "zhumagazy-khabdullin",
     relation: "parent",
+    role: "mother",
   },
   {
     fromId: "kabdolla-omaruly",

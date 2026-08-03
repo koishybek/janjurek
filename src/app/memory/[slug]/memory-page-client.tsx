@@ -11,11 +11,13 @@ import { PersonCard } from "@/components/person-card";
 import { PersonTable } from "@/components/person-table";
 import { MediaTabs } from "@/components/media-tabs";
 import { FamilyTreeLazy } from "@/components/family-tree-lazy";
+import { KinshipLinks } from "@/components/kinship-links";
 import { MemoryWall } from "@/components/memory-wall";
 import { ShareQR } from "@/components/share-qr";
 import { people as seedPeople, relations } from "@data/people";
-import { SectionTabs } from "@/components/example-memorial/section-tabs";
-import { HeroSection } from "@/components/example-memorial/hero-section";
+import { buildRelationIndex, findRootAncestor, getRelatives } from "@/lib/family-tree-model";
+import { SectionTabs } from "@/components/memorial/section-tabs";
+import { HeroSection } from "@/components/memorial/hero-section";
 import { Separator } from "@/components/ui/separator";
 import {
   Breadcrumb,
@@ -70,6 +72,13 @@ export function MemoryPageClient({ initialPerson, slug }: MemoryPageClientProps)
     };
   }, [initialPerson, slug]);
 
+  const relationIndex = useMemo(() => buildRelationIndex(relations), []);
+
+  const relatives = useMemo(
+    () => (person ? getRelatives(person.id, seedPeople, relationIndex) : null),
+    [person, relationIndex]
+  );
+
   const sections = useMemo(() => {
     const list = [
       { id: "biography", label: "Биография" },
@@ -99,9 +108,10 @@ export function MemoryPageClient({ initialPerson, slug }: MemoryPageClientProps)
     }
 
     const fullName = [person.lastName, person.firstName, person.patronymic].filter(Boolean).join(" ");
-    const hasRelations =
-      relations.some((edge) => edge.fromId === person.id || edge.toId === person.id) &&
-      seedPeople.some((p) => p.id === person.id);
+    // Root the tree at the earliest known ancestor so the whole line is visible
+    // and reachable, instead of showing this person as an orphan.
+    const treeRootId = findRootAncestor(person.id, relationIndex);
+    const hasRelations = relations.some((edge) => edge.fromId === person.id || edge.toId === person.id);
 
     return (
       <>
@@ -126,7 +136,7 @@ export function MemoryPageClient({ initialPerson, slug }: MemoryPageClientProps)
                   <p className="text-xs font-medium uppercase tracking-[0.28em] text-gold/80">Архив</p>
                   <h2 className="font-serif text-3xl text-foreground">Биографические данные</h2>
                 </div>
-                <PersonTable person={person} />
+                <PersonTable person={person} relatives={relatives ?? undefined} />
               </CardContent>
             </Card>
           </section>
@@ -139,12 +149,14 @@ export function MemoryPageClient({ initialPerson, slug }: MemoryPageClientProps)
                 Связь поколений семьи {person.lastName || "героя"}. Нажмите на родственников, чтобы перейти к их страницам.
               </p>
             </div>
+            {relatives ? <KinshipLinks relatives={relatives} /> : null}
             {hasRelations ? (
               <FamilyTreeLazy
-                rootId={person.id}
+                rootId={treeRootId}
                 people={seedPeople}
                 relations={relations}
                 variant="full"
+                focusId={person.id}
               />
             ) : (
               <div className="rounded-2xl border border-dashed border-white/10 bg-white/[0.02] p-10 text-center text-sm text-muted-foreground">

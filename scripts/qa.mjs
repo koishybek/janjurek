@@ -26,25 +26,34 @@ async function clickByText(page, sel, text) {
   return false;
 }
 
-/* ───────── TEST 1: YouTube embeds on memory page ───────── */
+/* ───────── TEST 1: kinship navigation — reach the father ───────── */
 {
   const page = await browser.newPage();
-  await page.goto(`${BASE}/memory/akan-nurgali-akhmetpekuly`, { waitUntil: "networkidle0" });
-  await clickByText(page, "button", "Медиа");
+  await page.goto(`${BASE}/memory/zhumagazy-khabdullin`, { waitUntil: "networkidle0" });
   await new Promise((r) => setTimeout(r, 900));
-  const iframes = await page.$$eval("iframe", (els) => els.map((e) => e.src));
-  log("\n[1] YOUTUBE EMBEDS");
-  log("   iframes found:", iframes.length);
-  iframes.forEach((s) => log("   -", s));
-  log("   verdict:", iframes.length >= 1 && iframes.every((s) => s.includes("youtube")) ? "PASS" : "FAIL");
-  await page.screenshot({ path: `${OUT}/qa_video.png` });
+  const fatherHref = await page.evaluate(() => {
+    const dt = [...document.querySelectorAll("dt")].find((e) => e.textContent.trim() === "Отец");
+    const link = dt?.parentElement?.querySelector("a");
+    return link ? { href: link.getAttribute("href"), text: link.textContent.trim() } : null;
+  });
+  log("\n[1] РОДСТВО: ССЫЛКА НА ОТЦА");
+  log("   найдена:", JSON.stringify(fatherHref));
+  if (fatherHref) {
+    await page.goto(`${BASE}${fatherHref.href}`, { waitUntil: "networkidle0" });
+    const title = await page.title();
+    log("   страница отца:", title);
+    log("   verdict:", title.includes("Кабдолла") ? "PASS" : "FAIL");
+  } else {
+    log("   verdict: FAIL");
+  }
+  await page.screenshot({ path: `${OUT}/qa_kinship.png` });
   await page.close();
 }
 
 /* ───────── TEST 2: Leave a note (tribute) ───────── */
 {
   const page = await browser.newPage();
-  await page.goto(`${BASE}/memory/akan-nurgali-akhmetpekuly`, { waitUntil: "networkidle0" });
+  await page.goto(`${BASE}/memory/zhumagazy-khabdullin`, { waitUntil: "networkidle0" });
   const before = await page.$$eval("article", (els) => els.length);
   await clickByText(page, "button", "Оставить заметку");
   await new Promise((r) => setTimeout(r, 700));

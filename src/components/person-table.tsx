@@ -4,9 +4,12 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
 import type { Person } from "@data/people";
+import type { Relatives } from "@/lib/family-tree-model";
 
 type PersonTableProps = {
   person: Person;
+  /** Relatives resolved from kinship edges. Their names become links. */
+  relatives?: Relatives;
 };
 
 type DisplayKey =
@@ -51,12 +54,12 @@ const fieldLabels: Array<{ key: DisplayKey | "coords"; label: string }> = [
   { key: "children", label: "Дети" },
 ];
 
-export function PersonTable({ person }: PersonTableProps) {
+export function PersonTable({ person, relatives }: PersonTableProps) {
   return (
     <Table className="text-sm leading-6 text-foreground/90">
       <TableBody>
         {fieldLabels.map(({ key, label }) => {
-          const value = resolveValue(person, key);
+          const value = resolveValue(person, key, relatives);
           return (
             <TableRow key={key as string} className="border-white/10 hover:bg-white/[0.02]">
               <TableCell className="w-1/3 align-top text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground">
@@ -71,7 +74,25 @@ export function PersonTable({ person }: PersonTableProps) {
   );
 }
 
-function resolveValue(person: Person, key: DisplayKey | "coords"): ReactNode {
+const fullName = (item: Person) =>
+  [item.lastName, item.firstName, item.patronymic].filter(Boolean).join(" ");
+
+function PersonLink({ item }: { item: Person }) {
+  return (
+    <Link
+      href={`/memory/${item.slug}`}
+      className="text-gold underline-offset-4 hover:underline"
+    >
+      {fullName(item)}
+    </Link>
+  );
+}
+
+function resolveValue(
+  person: Person,
+  key: DisplayKey | "coords",
+  relatives?: Relatives
+): ReactNode {
   if (key === "coords") {
     return person.burialCoordsUrl ? (
       <Link href={person.burialCoordsUrl} target="_blank" rel="noopener noreferrer" className="text-gold underline-offset-4 hover:underline">
@@ -79,6 +100,29 @@ function resolveValue(person: Person, key: DisplayKey | "coords"): ReactNode {
       </Link>
     ) : (
       "—"
+    );
+  }
+
+  // Kinship edges win over the free-text label: the text is written in several
+  // different name orders, the edge points at an actual page.
+  if (key === "fatherName" && relatives?.father) {
+    return <PersonLink item={relatives.father} />;
+  }
+
+  if (key === "spouse" && relatives?.spouse) {
+    return <PersonLink item={relatives.spouse} />;
+  }
+
+  if (key === "children" && relatives?.children.length) {
+    return (
+      <span className="flex flex-wrap gap-x-2 gap-y-1">
+        {relatives.children.map((child, index) => (
+          <span key={child.id}>
+            <PersonLink item={child} />
+            {index < relatives.children.length - 1 ? "," : null}
+          </span>
+        ))}
+      </span>
     );
   }
 

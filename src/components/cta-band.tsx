@@ -85,13 +85,6 @@ export function CtaBand() {
               </Link>
             </Button>
           </Magnetic>
-          <Button
-            asChild
-            variant="outline"
-            className="rounded-full border-white/20 px-8 py-6 text-base text-foreground/90 hover:border-gold/60 hover:text-gold"
-          >
-            <Link href="/memory/example-moon">Посмотреть пример</Link>
-          </Button>
         </motion.div>
       </div>
     </section>

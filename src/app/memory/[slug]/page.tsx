@@ -6,7 +6,13 @@ type MemoryPageProps = {
   params: Promise<{ slug: string }>;
 };
 
-export const dynamicParams = true;
+/**
+ * Only the memorials in `people` exist. Anything else — including the removed demo
+ * page — must answer a real 404, otherwise deleted URLs keep returning HTTP 200
+ * and stay indexed. Flip back to `true` once a backend can serve pages that are
+ * not in the static list.
+ */
+export const dynamicParams = false;
 
 export function generateStaticParams() {
   return people.map((person) => ({ slug: person.slug }));

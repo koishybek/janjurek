@@ -8,32 +8,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 
-/**
- * Sample tributes. They describe the demo memorial specifically, so they must never
- * appear on a real person's page — a family would see fabricated words from people
- * who do not exist.
- */
-const DEMO_SLUG = "akan-nurgali-akhmetpekuly";
-
-const seedTributes: Omit<Tribute, "slug">[] = [
-  {
-    id: "seed-1",
-    author: "Сауле",
-    relation: "дочь",
-    message:
-      "Папа всегда говорил: «Дерево держится корнями, а человек — родом». Мы помним каждое его слово и стараемся жить по совести, как он учил.",
-    approved: true,
-  },
-  {
-    id: "seed-2",
-    author: "Болат",
-    relation: "ученик",
-    message:
-      "Благодаря ему я полюбил лес и выбрал свою профессию. Светлая память настоящему наставнику.",
-    approved: true,
-  },
-];
-
 type PendingTribute = Tribute & { pending?: boolean };
 
 type MemoryWallProps = {
@@ -42,9 +16,7 @@ type MemoryWallProps = {
 };
 
 export function MemoryWall({ slug, personName }: MemoryWallProps) {
-  const [tributes, setTributes] = useState<PendingTribute[]>(() =>
-    slug === DEMO_SLUG ? seedTributes.map((t) => ({ ...t, slug })) : []
-  );
+  const [tributes, setTributes] = useState<PendingTribute[]>([]);
   const [open, setOpen] = useState(false);
   const [author, setAuthor] = useState("");
   const [relation, setRelation] = useState("");
@@ -57,13 +29,10 @@ export function MemoryWall({ slug, personName }: MemoryWallProps) {
     fetchApprovedTributes(slug)
       .then((remote) => {
         if (cancelled || remote.length === 0) return;
-        setTributes((current) => {
-          const seedOnly = current.filter((t) => t.id.startsWith("seed-"));
-          return [...remote, ...seedOnly];
-        });
+        setTributes(remote);
       })
       .catch(() => {
-        /* graceful: keep seed tributes */
+        /* graceful: an unreachable backend just leaves the wall empty */
       });
     return () => {
       cancelled = true;

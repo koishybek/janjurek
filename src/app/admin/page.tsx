@@ -284,7 +284,7 @@ export default function AdminPage() {
           <p className="text-sm uppercase tracking-[0.4em] text-gold/80">Администрирование</p>
           <h1 className="font-serif text-4xl text-foreground">Панель управления JANJUREK</h1>
           <p className="text-sm text-muted-foreground">
-            Здесь вы можете подготовить записи людей перед выгрузкой в Firebase. Все поля соответствуют биографии Акана Нургали.
+            Здесь вы можете подготовить записи людей перед выгрузкой в Firebase. Поля соответствуют структуре анкеты.
           </p>
         </section>
 
@@ -299,11 +299,11 @@ export default function AdminPage() {
                 <div className="grid gap-4 md:grid-cols-2">
                   <label className="space-y-2 text-sm font-medium text-foreground">
                     ID документа
-                    <Input value={form.id} onChange={handleBasicChange("id")} placeholder="akan-nurgali" />
+                    <Input value={form.id} onChange={handleBasicChange("id")} placeholder="asqar-nurlanuly" />
                   </label>
                   <label className="space-y-2 text-sm font-medium text-foreground">
                     Slug
-                    <Input value={form.slug} onChange={handleBasicChange("slug")} placeholder="akan-nurgali-akhmetpekuly" />
+                    <Input value={form.slug} onChange={handleBasicChange("slug")} placeholder="asqar-nurlanuly" />
                   </label>
                   <label className="space-y-2 text-sm font-medium text-foreground">
                     Фамилия
@@ -319,7 +319,7 @@ export default function AdminPage() {
                   </label>
                   <label className="space-y-2 text-sm font-medium text-foreground">
                     Годы жизни
-                    <Input value={form.years ?? ""} onChange={handleBasicChange("years")} placeholder="1926—1998" />
+                    <Input value={form.years ?? ""} onChange={handleBasicChange("years")} placeholder="1930—2005" />
                   </label>
                   <label className="space-y-2 text-sm font-medium text-foreground">
                     Жуз

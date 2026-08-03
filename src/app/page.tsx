@@ -1,24 +1,19 @@
-import Image from "next/image";
 import Link from "next/link";
 import { Footer } from "@/components/footer";
 import { Hero } from "@/components/hero";
 import { SiteHeader } from "@/components/site-header";
-import { Reveal, Counter, Parallax, Magnetic } from "@/components/motion-primitives";
+import { Reveal, Counter, Magnetic } from "@/components/motion-primitives";
 import { SectionHeading } from "@/components/section-heading";
 import { SearchCommandButton } from "@/components/search-command";
 import { people, relations } from "@data/people";
 import { Button } from "@/components/ui/button";
 import { FamilyTreeLazy } from "@/components/family-tree-lazy";
 import { CtaBand } from "@/components/cta-band";
-import { exampleMemorial } from "@data/examplePerson";
 import {
-  ScrollText,
-  CalendarClock,
   Images,
   Video,
   MessagesSquare,
   Network,
-  Star,
   BookText,
   ArrowRight,
   ArrowUpRight,
@@ -28,24 +23,15 @@ import {
 const PANEL = "rounded-2xl surface";
 
 export default function HomePage() {
-  const highlightedPerson = people[0];
+  // Explicit, so reordering the data file cannot silently change the homepage.
+  const highlightedPerson = people.find((item) => item.id === "kabdolla-omaruly") ?? people[0];
 
-  const exampleCards = [
-    {
-      title: `${people[0].lastName} ${people[0].firstName}`,
-      years: people[0].years ?? "—",
-      description: "Первый мемориал проекта JANJUREK с родовым древом и медиатекой.",
-      href: `/memory/${people[0].slug}`,
-      image: people[0].media?.photos?.[0]?.src ?? "/images/sample-photo.jpg",
-    },
-    {
-      title: exampleMemorial.name,
-      years: exampleMemorial.years,
-      description: "Демонстрационная страница в тематике «Лунная ночь» с развёрнутыми разделами.",
-      href: `/memory/${exampleMemorial.slug}`,
-      image: exampleMemorial.gallery[0]?.src ?? "/images/hero-stars.jpg",
-    },
-  ];
+  const memorialCards = people.map((item) => ({
+    name: [item.lastName, item.firstName, item.patronymic].filter(Boolean).join(" "),
+    years: item.years ?? "—",
+    detail: item.mainOccupation ?? item.birthPlace ?? "",
+    href: `/memory/${item.slug}`,
+  }));
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -58,7 +44,7 @@ export default function HomePage() {
             <div className={`${PANEL} grid grid-cols-1 divide-y divide-white/10 sm:grid-cols-3 sm:divide-x sm:divide-y-0`}>
               {[
                 { value: <Counter to={7} />, label: "колен рода — Жеті ата" },
-                { value: <Counter to={8} />, label: "живых разделов памяти" },
+                { value: <Counter to={5} />, label: "живых разделов памяти" },
                 { value: <span>∞</span>, label: "срок бережного хранения" },
               ].map((stat, i) => (
                 <div key={i} className="flex flex-col items-center gap-2 px-8 py-10 text-center">
@@ -129,49 +115,30 @@ export default function HomePage() {
           </Reveal>
         </section>
 
-        {/* ── Example memory pages ── */}
+        {/* ── Memorial pages ── */}
         <section id="examples" className="space-y-10">
           <Reveal>
-            <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
-              <SectionHeading
-                eyebrow="Истории"
-                title="Примеры страниц памяти"
-                description="Посмотрите готовые мемориалы JANJUREK. Каждая страница — это уникальная история семьи."
-              />
-              <Magnetic className="shrink-0">
-                <Button asChild className="gap-2 rounded-full bg-primary px-7 py-6 text-base text-primary-foreground hover:bg-primary/90">
-                  <a href="/memory/example-moon" target="_blank" rel="noopener noreferrer">Открыть демо «Лунная история»</a>
-                </Button>
-              </Magnetic>
-            </div>
+            <SectionHeading
+              eyebrow="Мемориалы"
+              title="Страницы памяти"
+              description="Каждая страница — это история семьи: биография, родовое древо и заметки близких."
+            />
           </Reveal>
-          <div className="grid gap-7 lg:grid-cols-2">
-            {exampleCards.map((card, i) => (
-              <Reveal key={card.href} delay={i * 0.1}>
-                <a href={card.href} target="_blank" rel="noopener noreferrer" className={`${PANEL} surface-hover group block overflow-hidden`}>
-                  <div className="relative h-72 w-full overflow-hidden">
-                    <Parallax amount={28} className="absolute inset-0">
-                      <Image
-                        src={card.image}
-                        alt={card.title}
-                        fill
-                        sizes="(min-width: 1024px) 50vw, 100vw"
-                        className="scale-110 object-cover grayscale transition-all duration-700 group-hover:grayscale-0"
-                      />
-                    </Parallax>
-                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
-                    <div className="absolute bottom-6 left-7 space-y-1.5">
-                      <p className="font-serif text-3xl text-white">{card.title}</p>
-                      <p className="text-xs uppercase tracking-[0.3em] text-gold/90">{card.years}</p>
-                    </div>
+          <div className="grid gap-6 sm:grid-cols-2">
+            {memorialCards.map((card, i) => (
+              <Reveal key={card.href} delay={(i % 2) * 0.08}>
+                <Link href={card.href} className={`${PANEL} surface-hover group flex h-full items-center justify-between gap-6 p-8`}>
+                  <div className="space-y-2">
+                    <p className="font-serif text-2xl text-foreground">{card.name}</p>
+                    <p className="text-xs uppercase tracking-[0.28em] text-gold/90">{card.years}</p>
+                    {card.detail ? (
+                      <p className="text-[15px] leading-7 text-muted-foreground">{card.detail}</p>
+                    ) : null}
                   </div>
-                  <div className="flex items-center justify-between gap-4 p-7">
-                    <p className="text-base leading-8 text-muted-foreground">{card.description}</p>
-                    <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-white/15 text-gold transition group-hover:border-gold group-hover:bg-gold/10">
-                      <ArrowUpRight className="h-5 w-5" />
-                    </span>
-                  </div>
-                </a>
+                  <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-white/15 text-gold transition group-hover:border-gold group-hover:bg-gold/10">
+                    <ArrowUpRight className="h-5 w-5" />
+                  </span>
+                </Link>
               </Reveal>
             ))}
           </div>
@@ -183,13 +150,13 @@ export default function HomePage() {
             <SectionHeading
               eyebrow="Возможности"
               title="Что внутри страницы памяти"
-              description="Каждый мемориал — это целостная история, собранная из живых разделов: от некролога и биографии до родового древа и стены памяти."
+              description="Каждый мемориал — это целостная история, собранная из живых разделов: от биографии и архива до родового древа и стены памяти."
               align="center"
             />
           </Reveal>
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-5">
             {memoryFeatures.map((feature, i) => (
-              <Reveal key={feature.title} delay={(i % 4) * 0.08}>
+              <Reveal key={feature.title} delay={(i % 5) * 0.08}>
                 <div className={`${PANEL} surface-hover h-full p-8`}>
                   <span className="grid h-12 w-12 place-items-center rounded-xl border border-gold/20 bg-gold/5">
                     <feature.icon className="h-6 w-6 text-gold" strokeWidth={1.5} aria-hidden />
@@ -381,14 +348,11 @@ export default function HomePage() {
 }
 
 const memoryFeatures = [
-  { icon: ScrollText, title: "Некролог", description: "Тёплые слова прощания и главные черты человека." },
   { icon: BookText, title: "Биография и архив", description: "Жизненный путь, происхождение рода, документы и факты." },
-  { icon: CalendarClock, title: "Таймлайн жизни", description: "Ключевые события по годам — от рождения до наследия." },
   { icon: Images, title: "Галерея", description: "Фотографии, бережно собранные в одном месте." },
   { icon: Video, title: "Видео", description: "Записи голоса, праздников и важных моментов." },
   { icon: MessagesSquare, title: "Стена памяти", description: "Близкие оставляют воспоминания и тёплые слова." },
   { icon: Network, title: "Родовое древо", description: "Интерактивные связи между поколениями семьи." },
-  { icon: Star, title: "Избранное", description: "Любимые фразы, книги, места и привычки человека." },
 ];
 
 const howSteps = [

@@ -12,9 +12,11 @@ export type FamilyTreeProps = {
   people: Person[];
   relations: Edge[];
   variant?: "preview" | "full";
+  /** The person whose page this is — highlighted, and not a link to itself. */
+  focusId?: string;
 };
 
-export function FamilyTree({ rootId, people, relations, variant = "full" }: FamilyTreeProps) {
+export function FamilyTree({ rootId, people, relations, variant = "full", focusId }: FamilyTreeProps) {
   const router = useRouter();
 
   const tree = useMemo<TreeNode | null>(() => buildTree(rootId, people, relations), [rootId, people, relations]);
@@ -32,7 +34,13 @@ export function FamilyTree({ rootId, people, relations, variant = "full" }: Fami
   return (
     <div className="relative overflow-x-auto pb-6">
       <div className="mx-auto flex w-max flex-col items-center gap-10">
-        <TreeNodeCard node={tree} depth={0} depthLimit={depthLimit} onNavigate={(slug) => router.push(`/memory/${slug}`)} />
+        <TreeNodeCard
+          node={tree}
+          depth={0}
+          depthLimit={depthLimit}
+          focusId={focusId}
+          onNavigate={(slug) => router.push(`/memory/${slug}`)}
+        />
       </div>
     </div>
   );
@@ -42,10 +50,11 @@ type TreeNodeCardProps = {
   node: TreeNode;
   depth: number;
   depthLimit: number;
+  focusId?: string;
   onNavigate: (slug: string) => void;
 };
 
-function TreeNodeCard({ node, depth, depthLimit, onNavigate }: TreeNodeCardProps) {
+function TreeNodeCard({ node, depth, depthLimit, focusId, onNavigate }: TreeNodeCardProps) {
   const person = node.person;
 
   if (!person) {
@@ -57,13 +66,13 @@ function TreeNodeCard({ node, depth, depthLimit, onNavigate }: TreeNodeCardProps
   return (
     <div className="flex flex-col items-center gap-8">
       <div className="flex items-center gap-4">
-        <PersonButton person={person} onNavigate={onNavigate} />
+        <PersonButton person={person} focusId={focusId} onNavigate={onNavigate} />
         {node.spouse ? (
           <>
             <span className="text-xl text-gold/70" title="в браке">
               ⚭<span className="sr-only">в браке с</span>
             </span>
-            <PersonButton person={node.spouse} onNavigate={onNavigate} />
+            <PersonButton person={node.spouse} focusId={focusId} onNavigate={onNavigate} />
           </>
         ) : null}
       </div>
@@ -73,7 +82,13 @@ function TreeNodeCard({ node, depth, depthLimit, onNavigate }: TreeNodeCardProps
           {node.children.map((child, index) => (
             <div key={child.person?.id ?? `virtual-${index}`} className="relative flex flex-col items-center">
               <span className="absolute -top-8 h-8 w-px bg-border/50" aria-hidden />
-              <TreeNodeCard node={child} depth={depth + 1} depthLimit={depthLimit} onNavigate={onNavigate} />
+              <TreeNodeCard
+                node={child}
+                depth={depth + 1}
+                depthLimit={depthLimit}
+                focusId={focusId}
+                onNavigate={onNavigate}
+              />
             </div>
           ))}
         </div>
@@ -84,25 +99,40 @@ function TreeNodeCard({ node, depth, depthLimit, onNavigate }: TreeNodeCardProps
 
 type PersonButtonProps = {
   person: Person;
+  focusId?: string;
   onNavigate: (slug: string) => void;
 };
 
-function PersonButton({ person, onNavigate }: PersonButtonProps) {
-  const canNavigate = Boolean(person.slug);
+function PersonButton({ person, focusId, onNavigate }: PersonButtonProps) {
+  const isFocus = Boolean(focusId) && person.id === focusId;
+  const canNavigate = Boolean(person.slug) && !isFocus;
 
   return (
     <button
       type="button"
       onClick={() => canNavigate && onNavigate(person.slug)}
+      aria-current={isFocus ? "page" : undefined}
       className={cn(
-        "min-w-[220px] rounded-3xl border border-border/40 bg-secondary/40 p-4 text-left shadow-lg transition hover:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent",
+        "min-w-[220px] rounded-3xl border p-4 text-left shadow-lg transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent",
+        isFocus
+          ? "border-gold/70 bg-gold/[0.07] cursor-default"
+          : "border-border/40 bg-secondary/40 hover:border-accent",
         canNavigate ? "cursor-pointer" : "cursor-default"
       )}
-      aria-label={`Открыть страницу памяти: ${person.lastName} ${person.firstName}`}
+      aria-label={
+        isFocus
+          ? `${person.lastName} ${person.firstName} — эта страница`
+          : `Открыть страницу памяти: ${person.lastName} ${person.firstName}`
+      }
     >
-      <p className="font-serif text-lg text-accent">{[person.lastName, person.firstName].filter(Boolean).join(" ")}</p>
+      <p className={cn("font-serif text-lg", isFocus ? "text-gold" : "text-accent")}>
+        {[person.lastName, person.firstName].filter(Boolean).join(" ")}
+      </p>
       <p className="text-sm text-muted-foreground">{person.patronymic ?? "—"}</p>
       <p className="mt-2 text-xs uppercase tracking-wider text-muted-foreground/80">{person.years ?? "Годы не указаны"}</p>
+      {isFocus ? (
+        <p className="mt-2 text-[10px] uppercase tracking-[0.2em] text-gold/80">Эта страница</p>
+      ) : null}
     </button>
   );
 }
