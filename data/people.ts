@@ -128,6 +128,7 @@ export const people: Person[] = [
     firstName: "Мәкен",
     lastName: "Сәдуакасқызы",
     altNames: ["Садвокасова Макен"],
+    portrait: "/images/people/maken-saduakaskyzy.jpg",
     years: "10.06.1934 — 18.04.2024",
     zhuz: "Средний жуз",
     rod: "Уак",
