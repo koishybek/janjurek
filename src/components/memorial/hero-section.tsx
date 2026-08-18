@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Image from "next/image";
 import { ShareButtons } from "./share-buttons";
 
@@ -7,15 +8,20 @@ type HeroSectionProps = {
   name: string;
   years: string;
   location?: string;
+  /** Path under /public. Hidden silently if the file is missing. */
+  portrait?: string;
 };
 
-export function HeroSection({ name, years, location }: HeroSectionProps) {
+export function HeroSection({ name, years, location, portrait }: HeroSectionProps) {
+  const [portraitFailed, setPortraitFailed] = useState(false);
+  const showPortrait = Boolean(portrait) && !portraitFailed;
+
   return (
     <section className="relative isolate overflow-hidden rounded-xl border border-white/10">
       <div className="absolute inset-0">
         <Image
           src="/images/hero/hero.jpg"
-          alt="Звёздное ночное небо"
+          alt=""
           fill
           priority
           sizes="100vw"
@@ -26,20 +32,33 @@ export function HeroSection({ name, years, location }: HeroSectionProps) {
       </div>
 
       <div className="relative flex min-h-[420px] flex-col justify-end gap-8 p-8 sm:p-12 md:min-h-[480px] md:flex-row md:items-end md:justify-between lg:p-16">
-        <div className="max-w-2xl space-y-5">
-          <p className="text-[13px] font-medium uppercase tracking-[0.32em] text-gold/90">
-            Мемориал JANJUREK
-          </p>
-          <h1 className="font-serif text-4xl leading-[1.05] text-gold sm:text-5xl lg:text-6xl">
-            {name}
-          </h1>
-          <p className="text-lg text-white/75 sm:text-xl">
-            {years}
-            {location ? <span className="text-white/45"> · {location}</span> : null}
-          </p>
-          <p className="max-w-lg text-base leading-8 text-white/60">
-            Светлая память. Поделитесь воспоминаниями и сохраните историю для будущих поколений.
-          </p>
+        <div className="flex flex-col gap-7 sm:flex-row sm:items-end">
+          {showPortrait ? (
+            <Image
+              src={portrait!}
+              alt={`Портрет: ${name}`}
+              width={352}
+              height={448}
+              onError={() => setPortraitFailed(true)}
+              className="h-44 w-36 shrink-0 rounded-2xl border border-gold/35 object-cover object-top shadow-2xl sm:h-56 sm:w-44"
+            />
+          ) : null}
+
+          <div className="max-w-2xl space-y-5">
+            <p className="text-[13px] font-medium uppercase tracking-[0.32em] text-gold/90">
+              Мемориал JANJUREK
+            </p>
+            <h1 className="font-serif text-4xl leading-[1.05] text-gold sm:text-5xl lg:text-6xl">
+              {name}
+            </h1>
+            <p className="text-lg text-white/75 sm:text-xl">
+              {years}
+              {location ? <span className="text-white/45"> · {location}</span> : null}
+            </p>
+            <p className="max-w-lg text-base leading-8 text-white/60">
+              Светлая память. Мы храним эту историю для будущих поколений.
+            </p>
+          </div>
         </div>
 
         <aside className="flex flex-col items-start gap-3 md:items-end">

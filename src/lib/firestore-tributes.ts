@@ -1,12 +1,4 @@
-import {
-  addDoc,
-  collection,
-  getDocs,
-  orderBy,
-  query,
-  serverTimestamp,
-  where,
-} from "firebase/firestore";
+import { collection, getDocs, orderBy, query, where } from "firebase/firestore";
 import { firebaseCollections, firestore, isFirebaseConfigured } from "@/lib/firebase";
 
 export type Tribute = {
@@ -21,7 +13,10 @@ export type Tribute = {
 
 /**
  * Fetch approved tributes for a memory page. Returns an empty list when Firebase
- * is not configured (local/dev) so the UI can fall back to seed content.
+ * is not configured, and the wall then renders nothing at all.
+ *
+ * Read-only by design: there is no public submit path, so a memorial cannot
+ * receive an unmoderated note.
  */
 export async function fetchApprovedTributes(slug: string): Promise<Tribute[]> {
   if (!isFirebaseConfigured || !firestore) return [];
@@ -48,30 +43,4 @@ export async function fetchApprovedTributes(slug: string): Promise<Tribute[]> {
           : undefined,
     } satisfies Tribute;
   });
-}
-
-export type NewTribute = {
-  slug: string;
-  author: string;
-  relation?: string;
-  message: string;
-};
-
-/**
- * Submit a tribute for moderation. Returns true when it was persisted to
- * Firestore; false when running without a backend (the UI then shows it
- * optimistically as "pending moderation").
- */
-export async function submitTribute(input: NewTribute): Promise<boolean> {
-  if (!isFirebaseConfigured || !firestore) return false;
-  const ref = collection(firestore, firebaseCollections.tributes);
-  await addDoc(ref, {
-    slug: input.slug,
-    author: input.author,
-    relation: input.relation ?? "",
-    message: input.message,
-    approved: false,
-    createdAt: serverTimestamp(),
-  });
-  return true;
 }

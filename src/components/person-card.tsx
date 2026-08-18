@@ -12,13 +12,15 @@ type PersonCardProps = {
 export function PersonCard({ person }: PersonCardProps) {
   const fullName = [person.firstName, person.patronymic].filter(Boolean).join(" ");
   const initials = `${person.firstName.at(0) ?? ""}${person.lastName.at(0) ?? ""}`.toUpperCase();
-  const avatarSrc = person.media?.photos?.[0]?.src;
+  // A dedicated portrait wins over the gallery; Radix falls back to the initials
+  // on its own if the file is missing.
+  const avatarSrc = person.portrait ?? person.media?.photos?.[0]?.src;
 
   return (
     <Card className="rounded-2xl surface shadow-none">
       <CardHeader className="flex flex-col gap-6 p-8 sm:flex-row sm:items-start">
-        <Avatar className="h-28 w-28 shrink-0 border border-gold/30 grayscale">
-          {avatarSrc ? <AvatarImage src={avatarSrc} alt={`Портрет: ${fullName || person.lastName}`} /> : null}
+        <Avatar className="h-28 w-28 shrink-0 border border-gold/30">
+          {avatarSrc ? <AvatarImage src={avatarSrc} alt={`Портрет: ${fullName || person.lastName}`} className="object-cover object-top" /> : null}
           <AvatarFallback className="bg-white/[0.04] text-2xl font-semibold text-gold">{initials || "?"}</AvatarFallback>
         </Avatar>
         <div className="space-y-3">

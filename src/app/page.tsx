@@ -7,6 +7,7 @@ import { SectionHeading } from "@/components/section-heading";
 import { SearchCommandButton } from "@/components/search-command";
 import { people, relations } from "@data/people";
 import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { FamilyTreeLazy } from "@/components/family-tree-lazy";
 import { CtaBand } from "@/components/cta-band";
 import {
@@ -31,6 +32,8 @@ export default function HomePage() {
     years: item.years ?? "—",
     detail: item.mainOccupation ?? item.birthPlace ?? "",
     href: `/memory/${item.slug}`,
+    portrait: item.portrait,
+    initials: `${item.firstName.at(0) ?? ""}${item.lastName.at(0) ?? ""}`.toUpperCase(),
   }));
 
   return (
@@ -121,19 +124,29 @@ export default function HomePage() {
             <SectionHeading
               eyebrow="Мемориалы"
               title="Страницы памяти"
-              description="Каждая страница — это история семьи: биография, родовое древо и заметки близких."
+              description="Каждая страница — это история семьи: биография, родовое древо и семейный архив."
             />
           </Reveal>
           <div className="grid gap-6 sm:grid-cols-2">
             {memorialCards.map((card, i) => (
               <Reveal key={card.href} delay={(i % 2) * 0.08}>
                 <Link href={card.href} className={`${PANEL} surface-hover group flex h-full items-center justify-between gap-6 p-8`}>
-                  <div className="space-y-2">
-                    <p className="font-serif text-2xl text-foreground">{card.name}</p>
-                    <p className="text-xs uppercase tracking-[0.28em] text-gold/90">{card.years}</p>
-                    {card.detail ? (
-                      <p className="text-[15px] leading-7 text-muted-foreground">{card.detail}</p>
-                    ) : null}
+                  <div className="flex items-center gap-5">
+                    <Avatar className="h-16 w-16 shrink-0 border border-gold/25">
+                      {card.portrait ? (
+                        <AvatarImage src={card.portrait} alt="" className="object-cover object-top" />
+                      ) : null}
+                      <AvatarFallback className="bg-white/[0.04] text-base font-semibold text-gold">
+                        {card.initials || "?"}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="space-y-2">
+                      <p className="font-serif text-2xl text-foreground">{card.name}</p>
+                      <p className="text-xs uppercase tracking-[0.28em] text-gold/90">{card.years}</p>
+                      {card.detail ? (
+                        <p className="text-[15px] leading-7 text-muted-foreground">{card.detail}</p>
+                      ) : null}
+                    </div>
                   </div>
                   <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-white/15 text-gold transition group-hover:border-gold group-hover:bg-gold/10">
                     <ArrowUpRight className="h-5 w-5" />
@@ -351,7 +364,7 @@ const memoryFeatures = [
   { icon: BookText, title: "Биография и архив", description: "Жизненный путь, происхождение рода, документы и факты." },
   { icon: Images, title: "Галерея", description: "Фотографии, бережно собранные в одном месте." },
   { icon: Video, title: "Видео", description: "Записи голоса, праздников и важных моментов." },
-  { icon: MessagesSquare, title: "Стена памяти", description: "Близкие оставляют воспоминания и тёплые слова." },
+  { icon: MessagesSquare, title: "Стена памяти", description: "Тёплые слова родных, собранные и опубликованные нами." },
   { icon: Network, title: "Родовое древо", description: "Интерактивные связи между поколениями семьи." },
 ];
 
@@ -366,7 +379,7 @@ const howSteps = [
 const pricingIncludes = [
   "Персональная страница памяти с уникальной ссылкой",
   "Биография, галерея фотографий и видео с YouTube",
-  "Родословное древо и заметки близких",
+  "Родословное древо и воспоминания родных",
   "Две QR-таблички для памятника",
   "Поиск страницы по имени и фамилии",
   "Помощь менеджера в оформлении",

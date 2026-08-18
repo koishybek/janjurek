@@ -17,6 +17,11 @@ export type Person = {
   patronymic?: string;
   /** Alternative spellings (e.g. russified forms) — used by search, never displayed. */
   altNames?: string[];
+  /**
+   * Path to the person's portrait under /public. Kept separate from `media.photos`
+   * so a single portrait does not turn into a one-item gallery tab.
+   */
+  portrait?: string;
   years?: string;
   zhuz?: string;
   rod?: string;

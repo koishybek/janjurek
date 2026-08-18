@@ -13,6 +13,7 @@ import { MediaTabs } from "@/components/media-tabs";
 import { FamilyTreeLazy } from "@/components/family-tree-lazy";
 import { KinshipLinks } from "@/components/kinship-links";
 import { MemoryWall } from "@/components/memory-wall";
+import { fetchApprovedTributes, type Tribute } from "@/lib/firestore-tributes";
 import { ShareQR } from "@/components/share-qr";
 import { people as seedPeople, relations } from "@data/people";
 import { buildRelationIndex, findRootAncestor, getRelatives } from "@/lib/family-tree-model";
@@ -36,6 +37,7 @@ type MemoryPageClientProps = {
 
 export function MemoryPageClient({ initialPerson, slug }: MemoryPageClientProps) {
   const [remotePerson, setRemotePerson] = useState<Person | null>(null);
+  const [tributes, setTributes] = useState<Tribute[]>([]);
   const [loading, setLoading] = useState(!initialPerson);
   const [error, setError] = useState<string | null>(null);
 
@@ -72,6 +74,23 @@ export function MemoryPageClient({ initialPerson, slug }: MemoryPageClientProps)
     };
   }, [initialPerson, slug]);
 
+  // Curated notes only: there is no public submit path, so an empty result simply
+  // means this memorial has none and the whole section stays hidden.
+  useEffect(() => {
+    if (!person) return;
+    let cancelled = false;
+    fetchApprovedTributes(person.slug)
+      .then((list) => {
+        if (!cancelled) setTributes(list);
+      })
+      .catch(() => {
+        /* graceful: an unreachable backend just leaves the wall hidden */
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [person]);
+
   const relationIndex = useMemo(() => buildRelationIndex(relations), []);
 
   const relatives = useMemo(
@@ -85,10 +104,10 @@ export function MemoryPageClient({ initialPerson, slug }: MemoryPageClientProps)
       person?.media ? { id: "media", label: "Медиа" } : null,
       { id: "records", label: "Архив" },
       { id: "tree", label: "Родословная" },
-      { id: "tributes", label: "Заметки" },
+      tributes.length > 0 ? { id: "tributes", label: "Заметки" } : null,
     ].filter((section): section is { id: string; label: string } => Boolean(section));
     return list;
-  }, [person]);
+  }, [person, tributes]);
 
   const renderContent = () => {
     if (loading) {
@@ -118,7 +137,12 @@ export function MemoryPageClient({ initialPerson, slug }: MemoryPageClientProps)
 
     return (
       <>
-        <HeroSection name={fullName} years={person.years ?? "—"} location={person.birthPlace} />
+        <HeroSection
+          name={fullName}
+          years={person.years ?? "—"}
+          location={person.birthPlace}
+          portrait={person.portrait}
+        />
         <SectionTabs sections={sections} />
         <div className="space-y-20">
           <section id="biography" className="scroll-mt-32 space-y-8">
@@ -169,10 +193,12 @@ export function MemoryPageClient({ initialPerson, slug }: MemoryPageClientProps)
             )}
           </section>
 
-          <section id="tributes" className="scroll-mt-32 space-y-8">
-            <Separator className="bg-white/10" />
-            <MemoryWall slug={person.slug} personName={fullName} />
-          </section>
+          {tributes.length > 0 ? (
+            <section id="tributes" className="scroll-mt-32 space-y-8">
+              <Separator className="bg-white/10" />
+              <MemoryWall personName={fullName} tributes={tributes} />
+            </section>
+          ) : null}
         </div>
         <div className="flex justify-end">
           <ButtonLink href="/" label="Вернуться на главную" />
