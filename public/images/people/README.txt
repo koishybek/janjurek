@@ -6,6 +6,9 @@
 
 Slug берётся из data/people.ts. Например: maken-saduakaskyzy.jpg
 
+  <slug>/NN.jpg     — фотографии для вкладки «Медиа → Фото» (01.jpg, 02.jpg, …),
+                      подключаются в media.photos той же записи
+
 ПОДКЛЮЧЕНИЕ
   В нужной записи data/people.ts пропишите:
     portrait: "/images/people/<slug>.jpg",

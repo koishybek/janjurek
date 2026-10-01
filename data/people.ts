@@ -31,6 +31,7 @@ export type Person = {
   birthPlace?: string;
   burialPlace?: string;
   burialCoordsUrl?: string;
+  causeOfDeath?: string;
   fatherName?: string;
   studyPlace?: string;
   mainOccupation?: string;
@@ -144,6 +145,30 @@ export const people: Person[] = [
       "Занесена в «Книгу почёта» РайПо за долголетний безупречный труд в системе Кооперации",
     ],
     spouse: "Хабдуллин Жумагазы Омарович",
+    media: {
+      photos: [
+        { src: "/images/people/maken-saduakaskyzy/01.jpg", alt: "Семейное фото в доме, на фоне ковра" },
+        { src: "/images/people/maken-saduakaskyzy/02.jpg", alt: "За праздничным столом с родными" },
+        { src: "/images/people/maken-saduakaskyzy/03.jpg", alt: "За праздничным столом с родными" },
+        { src: "/images/people/maken-saduakaskyzy/04.jpg", alt: "Большая семья за дастарханом" },
+        { src: "/images/people/maken-saduakaskyzy/05.jpg", alt: "С семьёй во дворе дома" },
+        { src: "/images/people/maken-saduakaskyzy/06.jpg", alt: "С цветами" },
+        { src: "/images/people/maken-saduakaskyzy/07.jpg", alt: "С малышкой на руках" },
+        { src: "/images/people/maken-saduakaskyzy/08.jpg", alt: "В объятиях родного человека" },
+        { src: "/images/people/maken-saduakaskyzy/09.jpg", alt: "С букетом цветов в кругу родных" },
+        { src: "/images/people/maken-saduakaskyzy/10.jpg", alt: "С родными и букетом цветов" },
+        { src: "/images/people/maken-saduakaskyzy/11.jpg", alt: "С малышкой и цветами" },
+        { src: "/images/people/maken-saduakaskyzy/12.jpg", alt: "С малышкой и букетом" },
+        { src: "/images/people/maken-saduakaskyzy/13.jpg", alt: "В кругу родных дома" },
+        { src: "/images/people/maken-saduakaskyzy/14.jpg", alt: "Праздничный стол с родственниками" },
+        { src: "/images/people/maken-saduakaskyzy/15.jpg", alt: "Семейное застолье" },
+        { src: "/images/people/maken-saduakaskyzy/16.jpg", alt: "Семейный праздник" },
+        { src: "/images/people/maken-saduakaskyzy/17.jpg", alt: "За столом с семьёй" },
+        { src: "/images/people/maken-saduakaskyzy/18.jpg", alt: "У новогодней ёлки" },
+      ],
+      videos: [],
+      documents: [],
+    },
   },
 ];
 

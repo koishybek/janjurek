@@ -357,6 +357,10 @@ export default function AdminPage() {
                     <Input value={form.burialCoordsUrl ?? ""} onChange={handleBasicChange("burialCoordsUrl")} placeholder="https://maps..." />
                   </label>
                   <label className="space-y-2 text-sm font-medium text-foreground">
+                    Причина смерти
+                    <Input value={form.causeOfDeath ?? ""} onChange={handleBasicChange("causeOfDeath")} placeholder="Например: после продолжительной болезни" />
+                  </label>
+                  <label className="space-y-2 text-sm font-medium text-foreground">
                     Отец
                     <Input value={form.fatherName ?? ""} onChange={handleBasicChange("fatherName")} />
                   </label>

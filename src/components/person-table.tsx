@@ -24,6 +24,7 @@ type DisplayKey =
   | "years"
   | "birthPlace"
   | "burialPlace"
+  | "causeOfDeath"
   | "fatherName"
   | "studyPlace"
   | "mainOccupation"
@@ -42,6 +43,7 @@ const fieldLabels: Array<{ key: DisplayKey | "coords"; label: string }> = [
   { key: "rod2", label: "Род 2" },
   { key: "rod3", label: "Род 3" },
   { key: "years", label: "Годы жизни" },
+  { key: "causeOfDeath", label: "Причина смерти" },
   { key: "birthPlace", label: "Место рождения" },
   { key: "burialPlace", label: "Место захоронения" },
   { key: "coords", label: "Координаты захоронения (ссылка)" },

@@ -27,8 +27,12 @@ function youtubeId(url: string): string | null {
 }
 
 export function MediaTabs({ media }: MediaTabsProps) {
+  // Open on the first tab that has something in it instead of an empty "Видео".
+  const defaultTab =
+    media.videos.length > 0 ? "video" : media.photos.length > 0 ? "photo" : media.documents.length > 0 ? "documents" : "video";
+
   return (
-    <Tabs defaultValue="video" className="w-full">
+    <Tabs defaultValue={defaultTab} className="w-full">
       <TabsList className="grid w-full grid-cols-3 rounded-lg border border-white/10 bg-white/[0.02] p-1">
         <TabsTrigger value="video" className="rounded-md text-sm font-medium data-[state=active]:bg-white/[0.06] data-[state=active]:text-gold">
           Видео
