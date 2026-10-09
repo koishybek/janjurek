@@ -5,17 +5,20 @@ import type { ChangeEvent, FormEvent } from "react";
 import { people, createEmptyPersonDraft, type Person } from "@data/people";
 import { buildMediaStoragePath, firebaseCollections, getAdminAccessCode, isFirebaseConfigured } from "@/lib/firebase";
 import { fetchPeopleFromFirestore, savePersonToFirestore } from "@/lib/firestore-people";
+import { BASE_MEDIA_FOLDERS } from "@/lib/media-folders";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { X } from "lucide-react";
 
 type PhotoDraft = {
   id: string;
   alt: string;
   storagePath: string;
+  folder: string;
   file?: File;
 };
 
@@ -23,6 +26,7 @@ type VideoDraft = {
   id: string;
   title: string;
   url: string;
+  folder: string;
 };
 
 type DocumentDraft = {
@@ -31,6 +35,7 @@ type DocumentDraft = {
   url: string;
   note: string;
   storagePath: string;
+  folder: string;
 };
 
 const createId = () => (typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2));
@@ -39,6 +44,7 @@ const createVideoDraft = (): VideoDraft => ({
   id: createId(),
   title: "",
   url: "",
+  folder: "",
 });
 
 const createDocumentDraft = (): DocumentDraft => ({
@@ -47,7 +53,15 @@ const createDocumentDraft = (): DocumentDraft => ({
   url: "",
   note: "",
   storagePath: "",
+  folder: "",
 });
+
+/** "" means unfiled. */
+const withFolder = <T extends { id: string; folder: string }>(items: T[], id: string, folder: string) =>
+  items.map((item) => (item.id === id ? { ...item, folder } : item));
+
+/** Firestore rejects `undefined`, so an unfiled item simply has no `folder` key. */
+const folderField = (folder: string) => (folder ? { folder } : {});
 
 export default function AdminPage() {
   const [authorized, setAuthorized] = useState(false);
@@ -59,6 +73,8 @@ export default function AdminPage() {
   const [photoDrafts, setPhotoDrafts] = useState<PhotoDraft[]>([]);
   const [videoDrafts, setVideoDrafts] = useState<VideoDraft[]>([createVideoDraft()]);
   const [documentDrafts, setDocumentDrafts] = useState<DocumentDraft[]>([createDocumentDraft()]);
+  const [customFolders, setCustomFolders] = useState<string[]>([]);
+  const [folderInput, setFolderInput] = useState("");
   const [payloadPreview, setPayloadPreview] = useState<string | null>(null);
   const [status, setStatus] = useState<string | null>(null);
   const [remotePeople, setRemotePeople] = useState<Person[]>([]);
@@ -129,6 +145,7 @@ export default function AdminPage() {
     const nextDrafts = files.map((file) => ({
       id: createId(),
       alt: "",
+      folder: "",
       file,
       storagePath: buildMediaStoragePath(slug, file.name),
     }));
@@ -167,6 +184,29 @@ export default function AdminPage() {
   const addDocumentDraft = () => setDocumentDrafts((current) => [...current, createDocumentDraft()]);
   const removeDocumentDraft = (id: string) => setDocumentDrafts((current) => current.filter((doc) => doc.id !== id));
 
+  const allFolders = [...BASE_MEDIA_FOLDERS, ...customFolders];
+
+  const addFolder = () => {
+    const name = folderInput.trim();
+    if (!name) return;
+    if (allFolders.some((folder) => folder.toLowerCase() === name.toLowerCase())) {
+      setStatus(`Папка «${name}» уже есть.`);
+      return;
+    }
+    setCustomFolders((current) => [...current, name]);
+    setFolderInput("");
+  };
+
+  const removeFolder = (name: string) => {
+    setCustomFolders((current) => current.filter((folder) => folder !== name));
+    // Files from a deleted folder fall back to unfiled rather than pointing at nothing.
+    const unfile = <T extends { folder: string }>(items: T[]) =>
+      items.map((item) => (item.folder === name ? { ...item, folder: "" } : item));
+    setPhotoDrafts(unfile);
+    setVideoDrafts(unfile);
+    setDocumentDrafts(unfile);
+  };
+
   const parseList = (value: string) =>
     value
       .split("\n")
@@ -193,10 +233,12 @@ export default function AdminPage() {
       media:
         photoDrafts.length > 0 || videoDrafts.length > 0 || documentDrafts.length > 0
           ? {
+              ...(customFolders.length > 0 ? { folders: customFolders } : {}),
               photos: photoDrafts.map((photo) => ({
                 src: `/storage/${photo.storagePath}`,
                 alt: photo.alt || photo.file?.name || "Без подписи",
                 storagePath: photo.storagePath,
+                ...folderField(photo.folder),
               })),
               videos: videoDrafts
                 .filter((video) => video.title && video.url)
@@ -204,6 +246,7 @@ export default function AdminPage() {
                   title: video.title,
                   url: video.url,
                   storagePath: buildMediaStoragePath(slug, `${video.title.replace(/\s+/g, "-").toLowerCase()}.mp4`),
+                  ...folderField(video.folder),
                 })),
               documents: documentDrafts
                 .filter((doc) => doc.title)
@@ -212,6 +255,7 @@ export default function AdminPage() {
                   url: doc.url || undefined,
                   note: doc.note || undefined,
                   storagePath: doc.storagePath || buildMediaStoragePath(slug, `${doc.title.replace(/\s+/g, "-").toLowerCase()}.pdf`),
+                  ...folderField(doc.folder),
                 })),
             }
           : undefined,
@@ -245,6 +289,8 @@ export default function AdminPage() {
     setPhotoDrafts([]);
     setVideoDrafts([createVideoDraft()]);
     setDocumentDrafts([createDocumentDraft()]);
+    setCustomFolders([]);
+    setFolderInput("");
     setPayloadPreview(null);
     setStatus("Форма очищена.");
   };
@@ -404,6 +450,54 @@ export default function AdminPage() {
 
                 <div className="space-y-4">
                   <div>
+                    <h3 className="text-lg font-semibold text-foreground">Папки медиа</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Базовые папки есть у каждой страницы. Добавьте свои, если нужно, и выберите папку у фото, видео или документа.
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {BASE_MEDIA_FOLDERS.map((folder) => (
+                      <Badge key={folder} variant="outline" className="rounded-full px-3 py-1 text-sm font-normal">
+                        {folder}
+                      </Badge>
+                    ))}
+                    {customFolders.map((folder) => (
+                      <Badge key={folder} variant="outline" className="gap-1 rounded-full border-gold/40 py-1 pl-3 pr-1 text-sm font-normal text-gold">
+                        {folder}
+                        <button
+                          type="button"
+                          onClick={() => removeFolder(folder)}
+                          aria-label={`Удалить папку «${folder}»`}
+                          className="rounded-full p-0.5 hover:bg-white/10"
+                        >
+                          <X className="h-3.5 w-3.5" aria-hidden />
+                        </button>
+                      </Badge>
+                    ))}
+                  </div>
+                  <div className="flex gap-2">
+                    <Input
+                      value={folderInput}
+                      onChange={(event) => setFolderInput(event.target.value)}
+                      onKeyDown={(event) => {
+                        // Enter adds the folder instead of submitting the whole record.
+                        if (event.key === "Enter") {
+                          event.preventDefault();
+                          addFolder();
+                        }
+                      }}
+                      placeholder="Например: Армия, Юбилей 80 лет"
+                    />
+                    <Button type="button" variant="secondary" className="shrink-0 rounded-2xl" onClick={addFolder}>
+                      Добавить папку
+                    </Button>
+                  </div>
+                </div>
+
+                <Separator />
+
+                <div className="space-y-4">
+                  <div>
                     <h3 className="text-lg font-semibold text-foreground">Фотографии</h3>
                     <p className="text-sm text-muted-foreground">Загрузите файлы — путь автоматически сформируется и его можно отредактировать.</p>
                   </div>
@@ -423,6 +517,14 @@ export default function AdminPage() {
                               <label className="space-y-1 text-sm font-medium text-foreground">
                                 Путь в хранилище
                                 <Input value={photo.storagePath} onChange={updatePhotoDraft(photo.id, "storagePath")} />
+                              </label>
+                              <label className="space-y-1 text-sm font-medium text-foreground">
+                                Папка
+                                <FolderSelect
+                                  value={photo.folder}
+                                  folders={allFolders}
+                                  onChange={(folder) => setPhotoDrafts((current) => withFolder(current, photo.id, folder))}
+                                />
                               </label>
                             </div>
                             <Button type="button" variant="outline" className="rounded-2xl" onClick={() => removePhotoDraft(photo.id)}>
@@ -452,9 +554,15 @@ export default function AdminPage() {
                   </div>
                   <div className="space-y-4">
                     {videoDrafts.map((video) => (
-                      <div key={video.id} className="grid gap-3 rounded-2xl border border-white/10 p-4 md:grid-cols-[1fr_1fr_auto]">
+                      <div key={video.id} className="grid gap-3 rounded-2xl border border-white/10 p-4 md:grid-cols-[1fr_1fr_11rem_auto]">
                         <Input value={video.title} onChange={updateVideoDraft(video.id, "title")} placeholder="Название" />
                         <Input value={video.url} onChange={updateVideoDraft(video.id, "url")} placeholder="https://..." />
+                        <FolderSelect
+                          value={video.folder}
+                          folders={allFolders}
+                          onChange={(folder) => setVideoDrafts((current) => withFolder(current, video.id, folder))}
+                          aria-label="Папка"
+                        />
                         <Button type="button" variant="outline" className="rounded-2xl" onClick={() => removeVideoDraft(video.id)}>
                           Удалить
                         </Button>
@@ -487,6 +595,12 @@ export default function AdminPage() {
                           className="min-h-[80px]"
                         />
                         <Input value={doc.storagePath} onChange={updateDocumentDraft(doc.id, "storagePath")} placeholder="people/.../documents/..." />
+                        <FolderSelect
+                          value={doc.folder}
+                          folders={allFolders}
+                          onChange={(folder) => setDocumentDrafts((current) => withFolder(current, doc.id, folder))}
+                          aria-label="Папка"
+                        />
                         <div className="text-right">
                           <Button type="button" variant="outline" className="rounded-2xl" onClick={() => removeDocumentDraft(doc.id)}>
                             Удалить
@@ -561,5 +675,30 @@ export default function AdminPage() {
         </section>
       </main>
     </div>
+  );
+}
+
+type FolderSelectProps = {
+  value: string;
+  folders: string[];
+  onChange: (folder: string) => void;
+  "aria-label"?: string;
+};
+
+function FolderSelect({ value, folders, onChange, "aria-label": ariaLabel }: FolderSelectProps) {
+  return (
+    <select
+      value={value}
+      onChange={(event) => onChange(event.target.value)}
+      aria-label={ariaLabel}
+      className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-base shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring md:text-sm"
+    >
+      <option value="">Без папки</option>
+      {folders.map((folder) => (
+        <option key={folder} value={folder}>
+          {folder}
+        </option>
+      ))}
+    </select>
   );
 }

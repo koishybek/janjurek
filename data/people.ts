@@ -3,10 +3,17 @@ export type MediaAssetMeta = {
   storageBucket?: string;
 };
 
+export type MediaItemMeta = MediaAssetMeta & {
+  /** Folder name: one of the base folders or `PersonMedia.folders`. Absent means unfiled. */
+  folder?: string;
+};
+
 export type PersonMedia = {
-  photos: Array<{ src: string; alt: string } & MediaAssetMeta>;
-  videos: Array<{ title: string; url: string } & MediaAssetMeta>;
-  documents: Array<{ title: string; url?: string; note?: string } & MediaAssetMeta>;
+  /** Extra folders for this person on top of the base set (От родных, От друзей, От коллег). */
+  folders?: string[];
+  photos: Array<{ src: string; alt: string } & MediaItemMeta>;
+  videos: Array<{ title: string; url: string } & MediaItemMeta>;
+  documents: Array<{ title: string; url?: string; note?: string } & MediaItemMeta>;
 };
 
 export type Person = {
@@ -148,24 +155,24 @@ export const people: Person[] = [
     spouse: "Хабдуллин Жумагазы Омарович",
     media: {
       photos: [
-        { src: "/images/people/maken-saduakaskyzy/01.jpg", alt: "Семейное фото в доме, на фоне ковра" },
-        { src: "/images/people/maken-saduakaskyzy/02.jpg", alt: "За праздничным столом с родными" },
-        { src: "/images/people/maken-saduakaskyzy/03.jpg", alt: "За праздничным столом с родными" },
-        { src: "/images/people/maken-saduakaskyzy/04.jpg", alt: "Большая семья за дастарханом" },
-        { src: "/images/people/maken-saduakaskyzy/05.jpg", alt: "С семьёй во дворе дома" },
-        { src: "/images/people/maken-saduakaskyzy/06.jpg", alt: "С цветами" },
-        { src: "/images/people/maken-saduakaskyzy/07.jpg", alt: "С малышкой на руках" },
-        { src: "/images/people/maken-saduakaskyzy/08.jpg", alt: "В объятиях родного человека" },
-        { src: "/images/people/maken-saduakaskyzy/09.jpg", alt: "С букетом цветов в кругу родных" },
-        { src: "/images/people/maken-saduakaskyzy/10.jpg", alt: "С родными и букетом цветов" },
-        { src: "/images/people/maken-saduakaskyzy/11.jpg", alt: "С малышкой и цветами" },
-        { src: "/images/people/maken-saduakaskyzy/12.jpg", alt: "С малышкой и букетом" },
-        { src: "/images/people/maken-saduakaskyzy/13.jpg", alt: "В кругу родных дома" },
-        { src: "/images/people/maken-saduakaskyzy/14.jpg", alt: "Праздничный стол с родственниками" },
-        { src: "/images/people/maken-saduakaskyzy/15.jpg", alt: "Семейное застолье" },
-        { src: "/images/people/maken-saduakaskyzy/16.jpg", alt: "Семейный праздник" },
-        { src: "/images/people/maken-saduakaskyzy/17.jpg", alt: "За столом с семьёй" },
-        { src: "/images/people/maken-saduakaskyzy/18.jpg", alt: "У новогодней ёлки" },
+        { src: "/images/people/maken-saduakaskyzy/01.jpg", alt: "Семейное фото в доме, на фоне ковра", folder: "От родных" },
+        { src: "/images/people/maken-saduakaskyzy/02.jpg", alt: "За праздничным столом с родными", folder: "От родных" },
+        { src: "/images/people/maken-saduakaskyzy/03.jpg", alt: "За праздничным столом с родными", folder: "От родных" },
+        { src: "/images/people/maken-saduakaskyzy/04.jpg", alt: "Большая семья за дастарханом", folder: "От родных" },
+        { src: "/images/people/maken-saduakaskyzy/05.jpg", alt: "С семьёй во дворе дома", folder: "От родных" },
+        { src: "/images/people/maken-saduakaskyzy/06.jpg", alt: "С цветами", folder: "От родных" },
+        { src: "/images/people/maken-saduakaskyzy/07.jpg", alt: "С малышкой на руках", folder: "От родных" },
+        { src: "/images/people/maken-saduakaskyzy/08.jpg", alt: "В объятиях родного человека", folder: "От родных" },
+        { src: "/images/people/maken-saduakaskyzy/09.jpg", alt: "С букетом цветов в кругу родных", folder: "От родных" },
+        { src: "/images/people/maken-saduakaskyzy/10.jpg", alt: "С родными и букетом цветов", folder: "От родных" },
+        { src: "/images/people/maken-saduakaskyzy/11.jpg", alt: "С малышкой и цветами", folder: "От родных" },
+        { src: "/images/people/maken-saduakaskyzy/12.jpg", alt: "С малышкой и букетом", folder: "От родных" },
+        { src: "/images/people/maken-saduakaskyzy/13.jpg", alt: "В кругу родных дома", folder: "От родных" },
+        { src: "/images/people/maken-saduakaskyzy/14.jpg", alt: "Праздничный стол с родственниками", folder: "От родных" },
+        { src: "/images/people/maken-saduakaskyzy/15.jpg", alt: "Семейное застолье", folder: "От родных" },
+        { src: "/images/people/maken-saduakaskyzy/16.jpg", alt: "Семейный праздник", folder: "От родных" },
+        { src: "/images/people/maken-saduakaskyzy/17.jpg", alt: "За столом с семьёй", folder: "От родных" },
+        { src: "/images/people/maken-saduakaskyzy/18.jpg", alt: "У новогодней ёлки", folder: "От родных" },
       ],
       videos: [],
       documents: [],
