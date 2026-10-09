@@ -65,6 +65,8 @@ export type Relatives = {
   otherParents: Person[];
   spouse?: Person;
   children: Person[];
+  /** Anyone sharing at least one recorded parent — full and half siblings alike. */
+  siblings: Person[];
 };
 
 /**
@@ -80,6 +82,10 @@ export function getRelatives(personId: string, people: Person[], index: Relation
   const father = parents.find((parent) => parent.role === "father");
   const mother = parents.find((parent) => parent.role === "mother");
   const spouseId = index.spouseOf.get(personId);
+  const siblingIds = new Set(
+    parents.flatMap((parent) => index.childrenByParent.get(parent.id) ?? [])
+  );
+  siblingIds.delete(personId);
 
   return {
     father: father ? byId.get(father.id) : undefined,
@@ -91,6 +97,9 @@ export function getRelatives(personId: string, people: Person[], index: Relation
     spouse: spouseId ? byId.get(spouseId) : undefined,
     children: (index.childrenByParent.get(personId) ?? [])
       .map((childId) => byId.get(childId))
+      .filter((item): item is Person => Boolean(item)),
+    siblings: [...siblingIds]
+      .map((siblingId) => byId.get(siblingId))
       .filter((item): item is Person => Boolean(item)),
   };
 }

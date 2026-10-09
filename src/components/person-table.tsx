@@ -31,7 +31,8 @@ type DisplayKey =
   | "awards"
   | "extraInfo"
   | "spouse"
-  | "children";
+  | "children"
+  | "siblings";
 
 const fieldLabels: Array<{ key: DisplayKey | "coords"; label: string }> = [
   { key: "lastName", label: "Фамилия" },
@@ -52,8 +53,9 @@ const fieldLabels: Array<{ key: DisplayKey | "coords"; label: string }> = [
   { key: "mainOccupation", label: "Кем работал (в основном)" },
   { key: "awards", label: "Награды" },
   { key: "extraInfo", label: "Доп. информация" },
-  { key: "spouse", label: "Жена/Муж" },
+  { key: "spouse", label: "Супруг/супруга" },
   { key: "children", label: "Дети" },
+  { key: "siblings", label: "Братья/сёстры" },
 ];
 
 export function PersonTable({ person, relatives }: PersonTableProps) {
@@ -90,6 +92,19 @@ function PersonLink({ item }: { item: Person }) {
   );
 }
 
+function PersonLinks({ items }: { items: Person[] }) {
+  return (
+    <span className="flex flex-wrap gap-x-2 gap-y-1">
+      {items.map((item, index) => (
+        <span key={item.id}>
+          <PersonLink item={item} />
+          {index < items.length - 1 ? "," : null}
+        </span>
+      ))}
+    </span>
+  );
+}
+
 function resolveValue(
   person: Person,
   key: DisplayKey | "coords",
@@ -116,16 +131,11 @@ function resolveValue(
   }
 
   if (key === "children" && relatives?.children.length) {
-    return (
-      <span className="flex flex-wrap gap-x-2 gap-y-1">
-        {relatives.children.map((child, index) => (
-          <span key={child.id}>
-            <PersonLink item={child} />
-            {index < relatives.children.length - 1 ? "," : null}
-          </span>
-        ))}
-      </span>
-    );
+    return <PersonLinks items={relatives.children} />;
+  }
+
+  if (key === "siblings" && relatives?.siblings.length) {
+    return <PersonLinks items={relatives.siblings} />;
   }
 
   const rawValue = person[key];

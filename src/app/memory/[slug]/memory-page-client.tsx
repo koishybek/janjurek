@@ -101,8 +101,8 @@ export function MemoryPageClient({ initialPerson, slug }: MemoryPageClientProps)
   const sections = useMemo(() => {
     const list = [
       { id: "biography", label: "Биография" },
-      person?.media ? { id: "media", label: "Медиа" } : null,
       { id: "records", label: "Архив" },
+      person?.media ? { id: "media", label: "Медиа" } : null,
       { id: "tree", label: "Родословная" },
       tributes.length > 0 ? { id: "tributes", label: "Заметки" } : null,
     ].filter((section): section is { id: string; label: string } => Boolean(section));
@@ -149,12 +149,6 @@ export function MemoryPageClient({ initialPerson, slug }: MemoryPageClientProps)
             <Separator className="bg-border/40" />
             <PersonCard person={person} />
           </section>
-          {person.media ? (
-            <section id="media" className="scroll-mt-32 space-y-8">
-              <Separator className="bg-border/40" />
-              <MediaTabs media={person.media} />
-            </section>
-          ) : null}
           <section id="records" className="scroll-mt-32 space-y-8">
             <Separator className="bg-white/10" />
             <Card className="rounded-2xl surface p-8">
@@ -167,6 +161,12 @@ export function MemoryPageClient({ initialPerson, slug }: MemoryPageClientProps)
               </CardContent>
             </Card>
           </section>
+          {person.media ? (
+            <section id="media" className="scroll-mt-32 space-y-8">
+              <Separator className="bg-border/40" />
+              <MediaTabs media={person.media} />
+            </section>
+          ) : null}
           <section id="tree" className="scroll-mt-32 space-y-8">
             <Separator className="bg-white/10" />
             <div className="space-y-2">

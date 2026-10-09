@@ -39,6 +39,7 @@ export type Person = {
   extraInfo?: string;
   spouse?: string;
   children?: string[];
+  siblings?: string[];
   media?: PersonMedia;
   createdAt?: string;
   updatedAt?: string;
@@ -62,8 +63,8 @@ export const createEmptyPersonDraft = (): PersonDraft => ({
 });
 
 /**
- * Kinship is defined by these edges and nothing else. The `fatherName`, `spouse`
- * and `children` fields on Person are free text written by families in four
+ * Kinship is defined by these edges and nothing else. The `fatherName`, `spouse`,
+ * `children` and `siblings` fields on Person are free text written by families in four
  * different name orders, so they are display labels only — never link targets.
  */
 export type Edge = {

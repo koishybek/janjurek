@@ -160,6 +160,15 @@ describe("getRelatives", () => {
     expect(kin.otherParents.map((p) => p.id)).toEqual(["dad"]);
   });
 
+  it("finds siblings through a shared parent, once each and without the person", () => {
+    const index = buildRelationIndex(fixture.relations);
+
+    // kid2 shares only the father with kid — a half sibling still counts.
+    expect(getRelatives("kid", fixture.people, index).siblings.map((s) => s.id)).toEqual(["kid2"]);
+    expect(getRelatives("kid2", fixture.people, index).siblings.map((s) => s.id)).toEqual(["kid"]);
+    expect(getRelatives("dad", fixture.people, index).siblings).toEqual([]);
+  });
+
   it("ignores edges pointing at people who have no record", () => {
     const index = buildRelationIndex([
       { fromId: "ghost", toId: "kid", relation: "parent", role: "father" },

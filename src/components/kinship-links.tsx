@@ -8,15 +8,16 @@ type KinshipLinksProps = {
 
 /**
  * Direct links to the closest relatives. The family tree below shows the whole
- * line, but this is the one-click path to a parent, spouse or child.
+ * line, but this is the one-click path to a parent, spouse, child or sibling.
  */
 export function KinshipLinks({ relatives }: KinshipLinksProps) {
   const groups: Array<{ label: string; people: Person[] }> = [
     { label: "Отец", people: relatives.father ? [relatives.father] : [] },
     { label: "Мать", people: relatives.mother ? [relatives.mother] : [] },
     { label: "Родители", people: relatives.otherParents },
-    { label: "Супруг(а)", people: relatives.spouse ? [relatives.spouse] : [] },
+    { label: "Супруг/супруга", people: relatives.spouse ? [relatives.spouse] : [] },
     { label: "Дети", people: relatives.children },
+    { label: "Братья/сёстры", people: relatives.siblings },
   ].filter((group) => group.people.length > 0);
 
   if (groups.length === 0) {

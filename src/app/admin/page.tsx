@@ -55,6 +55,7 @@ export default function AdminPage() {
   const [form, setForm] = useState(() => createEmptyPersonDraft());
   const [awardsText, setAwardsText] = useState("");
   const [childrenText, setChildrenText] = useState("");
+  const [siblingsText, setSiblingsText] = useState("");
   const [photoDrafts, setPhotoDrafts] = useState<PhotoDraft[]>([]);
   const [videoDrafts, setVideoDrafts] = useState<VideoDraft[]>([createVideoDraft()]);
   const [documentDrafts, setDocumentDrafts] = useState<DocumentDraft[]>([createDocumentDraft()]);
@@ -188,6 +189,7 @@ export default function AdminPage() {
       slug,
       awards: parseList(awardsText),
       children: parseList(childrenText),
+      siblings: parseList(siblingsText),
       media:
         photoDrafts.length > 0 || videoDrafts.length > 0 || documentDrafts.length > 0
           ? {
@@ -239,6 +241,7 @@ export default function AdminPage() {
     setForm(createEmptyPersonDraft());
     setAwardsText("");
     setChildrenText("");
+    setSiblingsText("");
     setPhotoDrafts([]);
     setVideoDrafts([createVideoDraft()]);
     setDocumentDrafts([createDocumentDraft()]);
@@ -373,7 +376,7 @@ export default function AdminPage() {
                     <Input value={form.mainOccupation ?? ""} onChange={handleBasicChange("mainOccupation")} />
                   </label>
                   <label className="space-y-2 text-sm font-medium text-foreground">
-                    Супруг(а)
+                    Супруг/супруга
                     <Input value={form.spouse ?? ""} onChange={handleBasicChange("spouse")} />
                   </label>
                   <label className="space-y-2 text-sm font-medium text-foreground">
@@ -390,6 +393,10 @@ export default function AdminPage() {
                   <label className="space-y-2 text-sm font-medium text-foreground">
                     Дети (каждый с новой строки)
                     <Textarea value={childrenText} onChange={(event) => setChildrenText(event.target.value)} placeholder="Имя ребёнка..." />
+                  </label>
+                  <label className="space-y-2 text-sm font-medium text-foreground">
+                    Братья/сёстры (каждый с новой строки)
+                    <Textarea value={siblingsText} onChange={(event) => setSiblingsText(event.target.value)} placeholder="Имя брата или сестры..." />
                   </label>
                 </div>
 
