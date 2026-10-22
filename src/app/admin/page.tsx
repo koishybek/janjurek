@@ -5,7 +5,7 @@ import type { ChangeEvent, FormEvent } from "react";
 import { people, createEmptyPersonDraft, type Person } from "@data/people";
 import { buildMediaStoragePath, firebaseCollections, getAdminAccessCode, isFirebaseConfigured } from "@/lib/firebase";
 import { fetchPeopleFromFirestore, savePersonToFirestore } from "@/lib/firestore-people";
-import { BASE_MEDIA_FOLDERS } from "@/lib/media-folders";
+import { BASE_MEDIA_FOLDERS, FOLDER_SEPARATOR, folderLabel, isWithinFolder } from "@/lib/media-folders";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -75,6 +75,8 @@ export default function AdminPage() {
   const [documentDrafts, setDocumentDrafts] = useState<DocumentDraft[]>([createDocumentDraft()]);
   const [customFolders, setCustomFolders] = useState<string[]>([]);
   const [folderInput, setFolderInput] = useState("");
+  /** "" = top level. */
+  const [folderParent, setFolderParent] = useState("");
   const [payloadPreview, setPayloadPreview] = useState<string | null>(null);
   const [status, setStatus] = useState<string | null>(null);
   const [remotePeople, setRemotePeople] = useState<Person[]>([]);
@@ -187,21 +189,25 @@ export default function AdminPage() {
   const allFolders = [...BASE_MEDIA_FOLDERS, ...customFolders];
 
   const addFolder = () => {
-    const name = folderInput.trim();
+    // The separator is what nests folders, so it cannot be part of a name.
+    const name = folderInput.split(FOLDER_SEPARATOR).join(" ").trim();
     if (!name) return;
-    if (allFolders.some((folder) => folder.toLowerCase() === name.toLowerCase())) {
-      setStatus(`Папка «${name}» уже есть.`);
+    const path = folderParent ? `${folderParent}${FOLDER_SEPARATOR}${name}` : name;
+    if (allFolders.some((folder) => folder.toLowerCase() === path.toLowerCase())) {
+      setStatus(`Папка «${folderLabel(path)}» уже есть.`);
       return;
     }
-    setCustomFolders((current) => [...current, name]);
+    setCustomFolders((current) => [...current, path]);
     setFolderInput("");
   };
 
-  const removeFolder = (name: string) => {
-    setCustomFolders((current) => current.filter((folder) => folder !== name));
+  const removeFolder = (path: string) => {
+    // A folder goes together with everything nested inside it.
+    setCustomFolders((current) => current.filter((folder) => !isWithinFolder(folder, path)));
+    if (folderParent && isWithinFolder(folderParent, path)) setFolderParent("");
     // Files from a deleted folder fall back to unfiled rather than pointing at nothing.
     const unfile = <T extends { folder: string }>(items: T[]) =>
-      items.map((item) => (item.folder === name ? { ...item, folder: "" } : item));
+      items.map((item) => (isWithinFolder(item.folder, path) ? { ...item, folder: "" } : item));
     setPhotoDrafts(unfile);
     setVideoDrafts(unfile);
     setDocumentDrafts(unfile);
@@ -291,6 +297,7 @@ export default function AdminPage() {
     setDocumentDrafts([createDocumentDraft()]);
     setCustomFolders([]);
     setFolderInput("");
+    setFolderParent("");
     setPayloadPreview(null);
     setStatus("Форма очищена.");
   };
@@ -452,7 +459,7 @@ export default function AdminPage() {
                   <div>
                     <h3 className="text-lg font-semibold text-foreground">Папки медиа</h3>
                     <p className="text-sm text-muted-foreground">
-                      Базовые папки есть у каждой страницы. Добавьте свои, если нужно, и выберите папку у фото, видео или документа.
+                      Базовые папки есть у каждой страницы. Добавьте свои — в корень или внутрь другой папки — и выберите папку у фото, видео или документа.
                     </p>
                   </div>
                   <div className="flex flex-wrap gap-2">
@@ -463,11 +470,11 @@ export default function AdminPage() {
                     ))}
                     {customFolders.map((folder) => (
                       <Badge key={folder} variant="outline" className="gap-1 rounded-full border-gold/40 py-1 pl-3 pr-1 text-sm font-normal text-gold">
-                        {folder}
+                        {folderLabel(folder)}
                         <button
                           type="button"
                           onClick={() => removeFolder(folder)}
-                          aria-label={`Удалить папку «${folder}»`}
+                          aria-label={`Удалить папку «${folderLabel(folder)}»`}
                           className="rounded-full p-0.5 hover:bg-white/10"
                         >
                           <X className="h-3.5 w-3.5" aria-hidden />
@@ -475,7 +482,20 @@ export default function AdminPage() {
                       </Badge>
                     ))}
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex flex-col gap-2 sm:flex-row">
+                    <select
+                      value={folderParent}
+                      onChange={(event) => setFolderParent(event.target.value)}
+                      aria-label="Где создать папку"
+                      className="flex h-9 rounded-md border border-input bg-background px-3 py-1 text-base shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring sm:w-56 md:text-sm"
+                    >
+                      <option value="">В корне</option>
+                      {allFolders.map((folder) => (
+                        <option key={folder} value={folder}>
+                          Внутри «{folderLabel(folder)}»
+                        </option>
+                      ))}
+                    </select>
                     <Input
                       value={folderInput}
                       onChange={(event) => setFolderInput(event.target.value)}
@@ -696,7 +716,7 @@ function FolderSelect({ value, folders, onChange, "aria-label": ariaLabel }: Fol
       <option value="">Без папки</option>
       {folders.map((folder) => (
         <option key={folder} value={folder}>
-          {folder}
+          {folderLabel(folder)}
         </option>
       ))}
     </select>

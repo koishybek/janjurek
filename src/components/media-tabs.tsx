@@ -6,7 +6,16 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PhotoGallery } from "@/components/photo-gallery";
 import type { Person } from "@data/people";
-import { listMediaFolders } from "@/lib/media-folders";
+import {
+  childFolders,
+  folderName,
+  folderTrail,
+  isWithinFolder,
+  listMediaFolders,
+  normalizeFolderPath,
+  parentFolder,
+  sameFolder,
+} from "@/lib/media-folders";
 import { cn } from "@/lib/utils";
 import { ArrowLeft, ChevronRight, ChevronsUpDown, ExternalLink, FileText, Film, Folder, FolderOpen, House } from "lucide-react";
 
@@ -33,8 +42,6 @@ function youtubeId(url: string): string | null {
 
 const countItems = (media: Media) => media.videos.length + media.photos.length + media.documents.length;
 
-const sameFolder = (a: string | undefined, b: string) => a?.trim().toLowerCase() === b.toLowerCase();
-
 function selectItems(media: Media, keep: (item: { folder?: string }) => boolean): Media {
   return {
     ...media,
@@ -52,9 +59,10 @@ const plural = (n: number, one: string, few: string, many: string) => {
   return many;
 };
 
-/** "2 видео · 18 фото" — what is inside, so a visitor knows before opening. */
-function describe(media: Media): string {
+/** "1 папка · 18 фото" — what is inside, so a visitor knows before opening. */
+function describe(media: Media, subfolders = 0): string {
   const parts = [
+    subfolders > 0 ? `${subfolders} ${plural(subfolders, "папка", "папки", "папок")}` : null,
     media.videos.length > 0 ? `${media.videos.length} видео` : null,
     media.photos.length > 0 ? `${media.photos.length} фото` : null,
     media.documents.length > 0
@@ -66,56 +74,68 @@ function describe(media: Media): string {
 
 type SortKey = "name" | "size";
 
+type FolderEntry = {
+  path: string;
+  name: string;
+  /** Everything inside, nested folders included — drives the counts. */
+  content: Media;
+  size: number;
+  subfolders: number;
+};
+
 /**
- * The media section works like a file browser: «Все» lists the folders, opening
- * one shows its videos, photos and documents.
+ * The media section works like a file browser: «Все» lists the top folders,
+ * opening one shows its subfolders and its own videos, photos and documents.
  */
 export function MediaTabs({ media }: MediaTabsProps) {
-  // null = «Все», the folder list.
-  const [folder, setFolder] = useState<string | null>(null);
+  // null = «Все», the top-level folder list; otherwise a path like "От родных/Диас".
+  const [path, setPath] = useState<string | null>(null);
   const [sort, setSort] = useState<{ key: SortKey; desc: boolean } | null>(null);
 
-  const folders = useMemo(
-    () =>
-      listMediaFolders(media).map((name) => {
-        const content = selectItems(media, (item) => sameFolder(item.folder, name));
-        return { name, content, size: countItems(content) };
-      }),
-    [media]
+  const allFolders = useMemo(() => listMediaFolders(media), [media]);
+
+  const entry = (folderPath: string): FolderEntry => {
+    const content = selectItems(media, (item) => isWithinFolder(item.folder, folderPath));
+    return {
+      path: folderPath,
+      name: folderName(folderPath),
+      content,
+      size: countItems(content),
+      subfolders: childFolders(allFolders, folderPath).length,
+    };
+  };
+
+  const listed = childFolders(allFolders, path).map(entry);
+  const sortedFolders = sort
+    ? [...listed].sort((a, b) =>
+        (sort.desc ? -1 : 1) * (sort.key === "name" ? a.name.localeCompare(b.name, "ru") : a.size - b.size)
+      )
+    : listed;
+
+  // Files filed exactly here; at the top level that means files with no folder.
+  const ownFiles = selectItems(media, (item) =>
+    path === null ? !normalizeFolderPath(item.folder) : sameFolder(item.folder, path)
   );
-
-  const sortedFolders = useMemo(() => {
-    if (!sort) return folders;
-    const sign = sort.desc ? -1 : 1;
-    return [...folders].sort((a, b) =>
-      sort.key === "name" ? sign * a.name.localeCompare(b.name, "ru") : sign * (a.size - b.size)
-    );
-  }, [folders, sort]);
-
-  // Files nobody filed still have to be reachable, so they sit under the list.
-  const unfiled = useMemo(
-    () => selectItems(media, (item) => !folders.some((f) => sameFolder(item.folder, f.name))),
-    [media, folders]
-  );
-
-  const openFolder = folder ? folders.find((f) => f.name === folder) : undefined;
+  const current = path ? entry(path) : null;
+  const topLevel = childFolders(allFolders, null);
+  const activeTop = path ? folderTrail(path)[0] : null;
 
   const toggleSort = (key: SortKey) =>
-    setSort((current) => (current?.key === key ? { key, desc: !current.desc } : { key, desc: false }));
+    setSort((value) => (value?.key === key ? { key, desc: !value.desc } : { key, desc: false }));
 
   return (
     <div className="space-y-5">
       <div className="-mx-1 overflow-x-auto px-1 pb-1">
         <div role="group" aria-label="Папки" className="flex w-max gap-2">
-          {[null, ...folders.map((f) => f.name)].map((name) => {
-            const active = folder === name;
-            const Icon = name === null ? House : active ? FolderOpen : Folder;
+          {[null, ...topLevel].map((top) => {
+            const active = activeTop === top;
+            const Icon = top === null ? House : active ? FolderOpen : Folder;
             return (
               <button
-                key={name ?? "all"}
+                key={top ?? "all"}
                 type="button"
                 aria-pressed={active}
-                onClick={() => setFolder(name)}
+                onClick={() => setPath(top)}
                 className={cn(
                   "inline-flex items-center gap-2 whitespace-nowrap rounded-full border px-4 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold",
                   active
@@ -124,7 +144,7 @@ export function MediaTabs({ media }: MediaTabsProps) {
                 )}
               >
                 <Icon className="h-4 w-4" aria-hidden />
-                {name ?? "Все"}
+                {top ?? "Все"}
                 <ChevronRight className="h-3.5 w-3.5 opacity-60" aria-hidden />
               </button>
             );
@@ -132,36 +152,42 @@ export function MediaTabs({ media }: MediaTabsProps) {
         </div>
       </div>
 
-      {openFolder ? (
-        <div className="space-y-5">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <button
-              type="button"
-              onClick={() => setFolder(null)}
-              className="inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
-            >
-              <ArrowLeft className="h-4 w-4" aria-hidden />
-              Все папки
+      {current ? (
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <button
+            type="button"
+            onClick={() => setPath(parentFolder(current.path))}
+            className="inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
+          >
+            <ArrowLeft className="h-4 w-4" aria-hidden />
+            Назад
+          </button>
+          <nav aria-label="Путь к папке" className="flex flex-wrap items-center gap-1.5 text-sm text-muted-foreground">
+            <button type="button" onClick={() => setPath(null)} className="transition-colors hover:text-foreground">
+              Все
             </button>
-            <p className="flex items-center gap-2 text-sm text-muted-foreground">
-              <FolderOpen className="h-4 w-4 text-gold/80" aria-hidden />
-              <span className="font-medium text-foreground">{openFolder.name}</span>
-              <span>· {describe(openFolder.content)}</span>
-            </p>
-          </div>
-          {openFolder.size > 0 ? (
-            <FolderContents key={openFolder.name} media={openFolder.content} />
-          ) : (
-            <Card className="rounded-xl border-white/10 bg-white/[0.02] shadow-none">
-              <CardContent className="flex items-center gap-3 p-6 text-muted-foreground">
-                <Folder className="h-5 w-5 text-gold/80" aria-hidden />
-                <span>В папке «{openFolder.name}» пока ничего нет</span>
-              </CardContent>
-            </Card>
-          )}
+            {folderTrail(current.path).map((step) => (
+              <span key={step} className="inline-flex items-center gap-1.5">
+                <ChevronRight className="h-3.5 w-3.5 opacity-60" aria-hidden />
+                {sameFolder(step, current.path) ? (
+                  <span className="inline-flex items-center gap-1.5 font-medium text-foreground">
+                    <FolderOpen className="h-4 w-4 text-gold/80" aria-hidden />
+                    {folderName(step)}
+                  </span>
+                ) : (
+                  <button type="button" onClick={() => setPath(step)} className="transition-colors hover:text-foreground">
+                    {folderName(step)}
+                  </button>
+                )}
+              </span>
+            ))}
+            <span>· {describe(current.content, current.subfolders)}</span>
+          </nav>
         </div>
-      ) : (
-        <div className="space-y-8">
+      ) : null}
+
+      <div className="space-y-8">
+        {sortedFolders.length > 0 ? (
           <div className="overflow-hidden rounded-2xl border border-white/10 bg-white/[0.02]">
             <div className="grid grid-cols-[1fr_auto] items-center gap-4 border-b border-white/10 px-5 py-3 text-sm text-muted-foreground sm:grid-cols-[1fr_12rem_10rem]">
               <SortHeader label="Имя" active={sort?.key === "name"} onClick={() => toggleSort("name")} />
@@ -170,10 +196,10 @@ export function MediaTabs({ media }: MediaTabsProps) {
             </div>
             <ul>
               {sortedFolders.map((item) => (
-                <li key={item.name} className="border-b border-white/5 last:border-b-0">
+                <li key={item.path} className="border-b border-white/5 last:border-b-0">
                   <button
                     type="button"
-                    onClick={() => setFolder(item.name)}
+                    onClick={() => setPath(item.path)}
                     className="grid w-full grid-cols-[1fr_auto] items-center gap-4 px-5 py-4 text-left transition-colors hover:bg-white/[0.04] focus-visible:bg-white/[0.04] focus-visible:outline-none sm:grid-cols-[1fr_12rem_10rem]"
                   >
                     <span className="flex min-w-0 items-center gap-4">
@@ -184,7 +210,7 @@ export function MediaTabs({ media }: MediaTabsProps) {
                       />
                       <span className="truncate font-medium text-foreground">{item.name}</span>
                     </span>
-                    <span className="text-sm text-muted-foreground">{describe(item.content)}</span>
+                    <span className="text-sm text-muted-foreground">{describe(item.content, item.subfolders)}</span>
                     <span className="hidden text-sm text-muted-foreground sm:block">
                       {item.size > 0 ? "Папка с файлами" : "Пустая папка"}
                     </span>
@@ -193,15 +219,26 @@ export function MediaTabs({ media }: MediaTabsProps) {
               ))}
             </ul>
           </div>
+        ) : null}
 
-          {countItems(unfiled) > 0 ? (
-            <div className="space-y-4">
-              <p className="text-sm font-medium text-muted-foreground">Без папки · {describe(unfiled)}</p>
-              <FolderContents media={unfiled} />
-            </div>
-          ) : null}
-        </div>
-      )}
+        {countItems(ownFiles) > 0 ? (
+          <div className="space-y-4">
+            {path === null ? (
+              <p className="text-sm font-medium text-muted-foreground">Без папки · {describe(ownFiles)}</p>
+            ) : null}
+            <FolderContents key={path ?? "root"} media={ownFiles} />
+          </div>
+        ) : null}
+
+        {current && current.size === 0 && sortedFolders.length === 0 ? (
+          <Card className="rounded-xl border-white/10 bg-white/[0.02] shadow-none">
+            <CardContent className="flex items-center gap-3 p-6 text-muted-foreground">
+              <Folder className="h-5 w-5 text-gold/80" aria-hidden />
+              <span>В папке «{current.name}» пока ничего нет</span>
+            </CardContent>
+          </Card>
+        ) : null}
+      </div>
     </div>
   );
 }
