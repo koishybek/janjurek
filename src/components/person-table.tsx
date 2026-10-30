@@ -26,6 +26,7 @@ type DisplayKey =
   | "burialPlace"
   | "causeOfDeath"
   | "fatherName"
+  | "motherName"
   | "studyPlace"
   | "mainOccupation"
   | "awards"
@@ -49,6 +50,7 @@ const fieldLabels: Array<{ key: DisplayKey | "coords"; label: string }> = [
   { key: "burialPlace", label: "Место захоронения" },
   { key: "coords", label: "Координаты захоронения (ссылка)" },
   { key: "fatherName", label: "Отец" },
+  { key: "motherName", label: "Мать" },
   { key: "studyPlace", label: "Место учёбы" },
   { key: "mainOccupation", label: "Кем работал (в основном)" },
   { key: "awards", label: "Награды" },
@@ -69,7 +71,7 @@ export function PersonTable({ person, relatives }: PersonTableProps) {
               <TableCell className="w-1/3 align-top text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground">
                 {label}
               </TableCell>
-              <TableCell className="w-2/3 align-top">{value ?? "—"}</TableCell>
+              <TableCell className="w-2/3 whitespace-pre-line align-top">{value ?? "—"}</TableCell>
             </TableRow>
           );
         })}
@@ -124,6 +126,10 @@ function resolveValue(
   // different name orders, the edge points at an actual page.
   if (key === "fatherName" && relatives?.father) {
     return <PersonLink item={relatives.father} />;
+  }
+
+  if (key === "motherName" && relatives?.mother) {
+    return <PersonLink item={relatives.mother} />;
   }
 
   if (key === "spouse" && relatives?.spouse) {

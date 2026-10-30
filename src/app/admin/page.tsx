@@ -421,6 +421,10 @@ export default function AdminPage() {
                     <Input value={form.fatherName ?? ""} onChange={handleBasicChange("fatherName")} />
                   </label>
                   <label className="space-y-2 text-sm font-medium text-foreground">
+                    Мать
+                    <Input value={form.motherName ?? ""} onChange={handleBasicChange("motherName")} />
+                  </label>
+                  <label className="space-y-2 text-sm font-medium text-foreground">
                     Место учёбы
                     <Input value={form.studyPlace ?? ""} onChange={handleBasicChange("studyPlace")} />
                   </label>
