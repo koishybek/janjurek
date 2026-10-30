@@ -45,9 +45,6 @@ export function PersonCard({ person }: PersonCardProps) {
               </span>
             ) : null}
           </CardDescription>
-      {person.extraInfo ? (
-        <p className="max-w-2xl whitespace-pre-line text-[15px] leading-8 text-muted-foreground sm:text-base">{person.extraInfo}</p>
-      ) : null}
     </div>
   </CardHeader>
   <CardContent className="flex flex-wrap gap-3 px-8 pb-8 text-sm text-muted-foreground">
